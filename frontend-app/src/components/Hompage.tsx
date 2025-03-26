@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { SearchIcon, InfoIcon, MapIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import "./Homepage.css";
 import logo from "../images/logo.png";
 import facebook from "../images/facebook.png";
@@ -13,9 +15,31 @@ import syr from "../imagesmm/syr.jpg";
 import stockphoto1 from "../imagesmm/stockphoto1.jpg";
 import pic1carousel from "../imagesmm/pic1carousel.png";
 import medimarc from "../imagesmm/medimarc-pic.png";
+import stockphoto from "../imagesmm/stockphoto.jpg";
+
 
 const Homepage = () => {
   const [activeTab, setActiveTab] = useState("history");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const images = [pic1carousel, medimarc, stockphoto1, stockphoto]; // Add all carousel images here.
+
+  const nextSlide = () => {
+    setActiveIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
+  const prevSlide = () => {
+    setActiveIndex((prevIndex) =>
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+    );
+  };
+
+  // Set up automatic slide change every 3 seconds
+  useEffect(() => {
+    const intervalId = setInterval(nextSlide, 3000); // Change every 3 seconds (3000ms)
+
+    // Cleanup the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []); // The empty dependency array ensures it runs only once on mount
 
   useEffect(() => {
     const fadeInElements = document.querySelectorAll(".fade-in");
@@ -71,25 +95,80 @@ const Homepage = () => {
             </ul>
           </div>
         </header>
+
         <section className="carousel-section">
-          <div className="carousel-wrapper">
-            <div className="carousel-track">
-              <div className="carousel-slide">
-                <img src={pic1carousel} alt="Slide 1" />
+        <div className="carousel-wrapper">
+          <div
+            className="carousel-track"
+            style={{
+              transform: `translateX(-${activeIndex * 100}%)`, // Move track based on activeIndex
+              transition: "transform 0.5s ease-in-out", // Apply transition to transform
+            }}
+          >
+            {images.map((image, index) => (
+              <div className="carousel-slide" key={index}>
+                <img src={image} alt={`Slide ${index + 1}`} />
               </div>
-              <div className="carousel-slide">
-                <img src={medimarc} alt="Slide 2" />
-              </div>
-              <div className="carousel-slide">
-                <img src={stockphoto1} alt="Slide 3" />
-              </div>
-            </div>
+            ))}
+          </div>
+
+        {/* Next and Previous Buttons */}
+            <button
+              className="carousel-prev"
+              onClick={prevSlide}
+              aria-label="Previous slide"
+            >
+              <ChevronLeftIcon size={24} /> {/* Chevron Left Icon */}
+            </button>
+            <button
+              className="carousel-next"
+              onClick={nextSlide}
+              aria-label="Next slide"
+            >
+              <ChevronRightIcon size={24} /> {/* Chevron Right Icon */}
+            </button>
+            
           </div>
         </section>
+
 
         <p>We believe in treating our customers with respect and faith.</p>
         <p>We integrate honesty, integrity, and business ethics.</p>
       </section>
+
+      <div className="container-feature">
+        <div className="content-feature">
+          <div className="button-group">
+            {/* First Button */}
+            <button className="feature-button">
+              <div className="icon-wrapper blue">
+                <MapIcon size={24} />
+              </div>
+              <h2>Office Location </h2>
+              <p>Find our office locations and get directions easily.</p>
+            </button>
+            {/* Second Button */}
+            <button className="feature-button">
+              <div className="icon-wrapper purple">
+                <SearchIcon size={24} />
+              </div>
+              <h2>NIPRO Products</h2>
+              <p>
+                Check here for more information and details about the NIPRO
+                products.
+              </p>
+            </button>
+            {/* Third Button */}
+            <button className="feature-button">
+              <div className="icon-wrapper green">
+                <InfoIcon size={24} />
+              </div>
+              <h2>About Us</h2>
+              <p>Learn more about our mission, vision, and values.</p>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="title-container">
         <h2>Overview of Products</h2>

@@ -396,11 +396,11 @@ section {
 
 .carousel-section {
   width: 100%;
-  background: white;
+  background-image: linear-gradient(to right, rgba(179, 122, 255, 0.5), rgba(135, 191, 255, 0.5));
   overflow: hidden;
   margin: 0 auto;
   padding: 25px;
-  
+  position: relative; /* Required for positioning the buttons */
 }
 
 .carousel-wrapper {
@@ -414,7 +414,9 @@ section {
 .carousel-track {
   display: flex;
   animation: scrollCarousel 15s linear infinite;
+  transition: transform 0.5s ease-in-out; /* Smooth transition for manual control */
 }
+
 
 .carousel-slide {
   min-width: 100%;
@@ -428,20 +430,57 @@ section {
   border-radius: 0;
 }
 
-@keyframes scrollCarousel {
-  0% {
-    transform: translateX(0%);
-  }
-  33% {
-    transform: translateX(-100%);
-  }
-  66% {
-    transform: translateX(-200%);
-  }
-  100% {
-    transform: translateX(0%);
-  }
+/* Positioning the buttons at the bottom and on the sides */
+.carousel-prev,
+.carousel-next {
+  position: fixed; /* Keeps the buttons fixed relative to the viewport */
+  top: 50%; /* Centers the buttons vertically on the screen */
+  transform: translateY(-50%); /* Adjusts the positioning to perfectly center the buttons */
+  padding: 15px;
+  background-color: white; /* Makes the background white */
+  color: black; /* Makes the arrow icon color black */
+  font-size: 30px;
+  border: 2px solid black; /* Adds a border to create a clear boundary */
+  border-radius: 50%; /* Makes the button circular */
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px; /* Set the width of the circular button */
+  height: 50px; /* Set the height of the circular button */
 }
+
+.carousel-prev {
+  left: 40px; /* Position left button on the left */
+}
+
+.carousel-next {
+  right: 40px; /* Position right button on the right */
+}
+
+/* Hover effect */
+.carousel-prev:hover,
+.carousel-next:hover {
+  background-color: #f0f0f0; /* Light gray background on hover */
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3); /* Light shadow for emphasis */
+}
+
+/* Active animation (when clicked) - scale down and bounce */
+.carousel-prev:active,
+.carousel-next:active {
+  transform: scale(0.95); /* Slightly shrink the button when clicked */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Add light shadow on click */
+}
+
+/* Optional: Add focus effect for accessibility */
+.carousel-prev:focus,
+.carousel-next:focus {
+  outline: none; /* Remove the default outline */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Light border shadow when focused */
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -449,6 +488,8 @@ section {
     height: 40vh;
   }
 }
+
+
 
 
 
@@ -518,5 +559,99 @@ section {
     flex-direction: column;
     gap: 10px;
     padding: 1rem;
+  }
+}
+
+/* 3 BUTTONS */
+
+.container-feature {
+  width: 100%;
+  min-height: 30vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.content-feature {
+  width: 100%;
+  max-width: 1200px;
+}
+h2 {
+  text-align: center;
+  color: black;
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+.button-group {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.feature-button {
+  flex: 1;
+  min-width: 280px;
+  max-width: 350px;
+  background: white;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+}
+.feature-button:hover {
+  border-color: #00ff00;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.3),
+              0 0 30px rgba(0, 255, 0, 0.2);
+  transform: translateY(-2px);
+}
+.icon-wrapper {
+  padding: 16px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  transition: transform 0.3s ease;
+}
+.feature-button:hover .icon-wrapper {
+  transform: scale(1.1);
+}
+.icon-wrapper.blue {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+.icon-wrapper.purple {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
+.icon-wrapper.green {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+.feature-button h2 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+.feature-button p {
+  color: #6b7280;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+@media (max-width: 768px) {
+  .button-group {
+    flex-direction: column;
+    align-items: center;
+  }
+  .feature-button {
+    width: 100%;
+    max-width: 400px;
   }
 }
