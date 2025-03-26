@@ -13,9 +13,17 @@ import syr from "../imagesmm/syr.jpg";
 import stockphoto1 from "../imagesmm/stockphoto1.jpg";
 import pic1carousel from "../imagesmm/pic1carousel.png";
 import medimarc from "../imagesmm/medimarc-pic.png";
+import { Carousel } from "./Carousel";
+import { SearchIcon, InfoIcon, MapIcon } from "lucide-react";
 
 const Homepage = () => {
   const [activeTab, setActiveTab] = useState("history");
+  const slides = [
+    { image: pic1carousel, alt: "Slide 1" },
+    { image: medimarc, alt: "Slide 2" },
+    { image: stockphoto1, alt: "Slide 3" },
+    { image: medimarc, alt: "Slide 4" },
+  ];
 
   useEffect(() => {
     const fadeInElements = document.querySelectorAll(".fade-in");
@@ -72,24 +80,45 @@ const Homepage = () => {
           </div>
         </header>
         <section className="carousel-section">
-          <div className="carousel-wrapper">
-            <div className="carousel-track">
-              <div className="carousel-slide">
-                <img src={pic1carousel} alt="Slide 1" />
-              </div>
-              <div className="carousel-slide">
-                <img src={medimarc} alt="Slide 2" />
-              </div>
-              <div className="carousel-slide">
-                <img src={stockphoto1} alt="Slide 3" />
-              </div>
-            </div>
-          </div>
+          <Carousel slides={slides} autoplayInterval={5000} />
         </section>
-
         <p>We believe in treating our customers with respect and faith.</p>
         <p>We integrate honesty, integrity, and business ethics.</p>
       </section>
+
+      <div className="container-feature">
+        <div className="content-feature">
+          <div className="button-group">
+            {/* First Button */}
+            <button className="feature-button">
+              <div className="icon-wrapper blue">
+                <MapIcon size={24} />
+              </div>
+              <h2>Office Location </h2>
+              <p>Find our office locations and get directions easily.</p>
+            </button>
+            {/* Second Button */}
+            <button className="feature-button">
+              <div className="icon-wrapper purple">
+                <SearchIcon size={24} />
+              </div>
+              <h2>NIPRO Products</h2>
+              <p>
+                Check here for more information and details about the NIPRO
+                products.
+              </p>
+            </button>
+            {/* Third Button */}
+            <button className="feature-button">
+              <div className="icon-wrapper green">
+                <InfoIcon size={24} />
+              </div>
+              <h2>About Us</h2>
+              <p>Learn more about our mission, vision, and values.</p>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="title-container">
         <h2>Overview of Products</h2>
