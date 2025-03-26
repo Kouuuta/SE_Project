@@ -1,0 +1,508 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+  background-image: linear-gradient(to right, rgba(179, 122, 255, 0.5), rgba(135, 191, 255, 0.5));
+  color: #333;
+  height: 100%;
+  width: 100%;
+  margin-top: 70%;
+
+}
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+
+/* Custom Navbar */
+.custom-header {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 30px;
+  position: relative;
+}
+
+.nav-logo {
+  height: 60px;
+}
+
+.nav-links {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 30px;
+  list-style: none;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 600;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+.nav-links li a:hover {
+  color: #6f42c1;
+}
+
+/* Burger Button */
+.burger-icon {
+  font-size: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: none;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    background: white;
+    position: absolute;
+    top: 75px;
+    right: 0;
+    width: 100%;
+    text-align: center;
+    padding: 20px 0;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .nav-links.nav-active {
+    display: flex;
+  }
+
+  .burger-icon {
+    display: block;
+  }
+}
+
+
+
+
+.bottom-navbar {
+  padding: 20px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid black;
+  bottom: 0;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.navbar-content {
+  display: flex;
+  justify-content: space-between; /* Space between address and icons */
+  align-items: center;
+  width: 100%;
+  max-width: 1850px;
+}
+
+.address-section {
+  text-align: center; /* Align text to the left */
+  margin: 20px auto;
+}
+
+.address-section h3 {
+  font-weight: normal;
+  font-size: 15px;
+  margin-left: 150px;
+}
+
+.footer-copyright {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #333;
+  margin-left: 150px;
+}
+
+.social-media-icons {
+  display: flex;
+  justify-content: flex-end; /* Align icons to the right */
+  gap: 15px;
+}
+
+.icon img {
+  width: 25px;
+  height: 30px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.icon img:hover {
+  transform: scale(1.2);
+}
+
+
+.main-content {
+flex: 1;
+padding: 20px;
+overflow-y: auto;
+display: flex;
+justify-content: center;
+padding-bottom: 80px;
+height: 100%;
+}
+
+.product-container {
+background: #fff;
+box-shadow: 0 12px 12px rgba(0, 0, 0, 0.3);
+border-radius: 20px;
+padding: 30px;
+width: 90%;
+margin: 0 auto;
+min-height: 1000px;
+overflow-y: auto; /* Adds scrolling for overflow content */
+}
+
+.filter-container {
+display: flex;
+align-items: center;
+justify-content: flex-start; /* Align filter dropdown to the left */
+margin-bottom: 20px;
+}
+
+.filter-label {
+font-size: 16px;
+font-weight: 500;
+margin-right: 10px;
+}
+
+.filter-dropdown {
+font-size: 16px;
+padding: 5px 10px;
+border: 1px solid #ccc;
+border-radius: 5px;
+width: 250px; /* Limit width on desktop */
+}
+
+
+
+.product-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr); /* 4 products per row on desktop */
+gap: 20px; /* Space between items */
+}
+
+@media (max-width: 768px) {
+.product-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Responsive grid for mobile */
+}
+}
+
+
+.product-item {
+text-align: center;
+padding: 10px;
+box-sizing: border-box;
+}
+
+.product-image {
+background: #f0f0f0;
+width: 100%;
+height: 200px;
+border-radius: 10px;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+
+}
+
+.product-image img {
+width: 100%;
+height: auto;
+object-fit: cover;
+border-radius: 8px;
+}
+
+.product-name {
+font-size: 16px;
+margin: 5px 0 5px;
+color: #333;
+font-weight: 600;
+}
+
+.product-category {
+font-size: 14px;
+color: #666;
+margin: 0;
+}
+
+
+
+.navbar-content {
+display: flex;
+justify-content: space-between;
+align-items: center;
+width: 100%;
+max-width: 1850px;
+}
+
+.bottom-navbar h3 {
+font-weight: normal;
+text-align: center;
+flex-grow: 1;
+}
+
+.social-media-icons {
+display: flex;
+justify-content: center;
+gap: 15px;
+margin-top: 10px;
+}
+
+.icon img {
+width: 30px;
+height: 30px;
+object-fit: contain;
+transition: transform 0.3s ease;
+}
+
+.icon img:hover {
+transform: scale(1.2);
+}
+
+/* Fade-in animation */
+.fade-in {
+opacity: 0;
+transform: translateY(20px);
+transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.fade-in-visible {
+opacity: 1;
+transform: translateY(0);
+}
+/* For mobile devices */
+@media (max-width: 992px) {
+/* Navbar styles for mobile */
+.navbar {
+  height: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Navbar items - hidden initially and stacked vertically */
+.navbar .navbar-nav {
+  display: none; /* Hide the nav items initially */
+  flex-direction: column; /* Stack navbar items vertically */
+  align-items: center; /* Center align navbar items */
+  width: 100%; /* Take full width */
+  position: absolute;
+  top: 70px; /* Adjust according to the navbar height */
+  background-color: white; /* Optional: You can change the background color */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+/* Styling for individual nav links */
+.navbar .nav-link {
+  font-size: 18px; /* Adjust font size */
+  padding: 12px 20px; /* Adjust padding for better touch interaction */
+  text-align: center; /* Center align text */
+  color: #fff; /* Text color for nav items */
+}
+
+/* Toggle button visible only on mobile */
+.navbar .navbar-toggler {
+  display: block; /* Show the toggle button */
+  background-color: transparent;
+  border: none;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+/* Icon for the toggle button */
+.navbar .navbar-toggler-icon {
+  background-color: black; /* Adjust the color of the toggle icon */
+}
+
+/* Show the nav items when 'open' class is added */
+.navbar.open .navbar-nav {
+  display: flex; /* Show the nav items when the drawer is open */
+}
+ /* Bottom navbar adjustments */
+ .navbar-content {
+  flex-direction: column; /* Stack address and social media icons */
+  align-items: center;
+  gap: 10px;
+}
+
+.address-section h3,
+.footer-copyright {
+  margin-left: 0; /* Remove margin-left */
+  text-align: center; /* Center text */
+}
+
+.social-media-icons {
+  justify-content: center; /* Center icons */
+  top: 100;
+}
+
+/* Adjust the general container */
+.container {
+  max-width: 100%; /* Allow container to stretch full width */
+  padding: 20px; /* Adjust padding */
+  height: auto; /* Let height adjust based on content */
+}
+}
+@media (min-width: 992px) {
+.navbar {
+  display: flex;
+  justify-content: center; /* Center the navbar items */
+  align-items: center;
+  width: 100%;
+  height: 70px;
+  margin: 0 auto; /* Ensure navbar itself is centered */
+}
+
+.navbar .navbar-nav {
+  display: flex;
+  justify-content: center; /* Center the nav items horizontally */
+  gap: 55px; /* Maintain gap between navbar items */
+  width: auto; /* Let navbar items take their natural width */
+  margin: 0 auto; /* Ensure nav items are centered */
+}
+
+.navbar .nav-link {
+  font-size: 18px;
+  padding: 10px 15px;
+  color: black !important;
+}
+
+.navbar .nav-link:hover {
+  color: #b37aff !important;
+}
+}
+
+/* For mobile responsiveness */
+@media (max-width: 768px) {
+.filter-dropdown {
+  width: 90% !important;  /* Force the dropdown to be within the container */
+  max-width: 300px !important; /* Ensures it doesn’t exceed container width */
+  margin: 0 auto; /* Center it */
+  display: block;
+}
+
+/* Force dropdown options to not overflow */
+.filter-dropdown option {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+} 
+
+.filter-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: left; /* Center it properly */
+  width: 100%;
+  padding: 10px 0; /* Add padding for visibility */
+}
+
+.filter-label {
+  font-size: 16px;
+  margin-bottom: 5px;
+  text-align: center;
+  display: block;
+}
+
+.filter-dropdown {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  display: block;
+  font-size: 16px;
+  padding: 8px;
+}
+
+.product-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Responsive grid for mobile */
+  gap: 10px;
+}
+
+.product-container {
+  margin-top: 130px;
+}
+}
+
+/* LAPTOP RESPONSIVENESS */
+
+@media (max-width: 1366px) {
+.navbar {
+  flex-direction: column;
+  padding: 15px;
+}
+
+.navbar-logo img {
+  width: 120px; /* Adjust logo size for smaller screens */
+}
+
+.navbar-links {
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.navbar-links a {
+  font-size: 14px; /* Reduce font size for smaller screens */
+}
+}
+
+
+/* CARDS */
+
+.card {
+background: #fff; /* White background for the card */
+border: 1px solid #ccc; /* Optional: Add a border for the card */
+border-radius: 10px; /* Rounded corners */
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+padding: 20px; /* Inner spacing for the content */
+display: flex;
+flex-direction: column; /* Stack the content vertically */
+align-items: center; /* Center-align content */
+justify-content: center; /* Center the content vertically */
+text-align: center; /* Center-align the text */
+height: 350px; /* Ensure all cards are the same height */
+width: 100%; /* Make cards responsive */
+}
+
+.product-image {
+width: 100%;
+height: 200px; /* Uniform height for images */
+background-color: #ffffff; /* Light gray background for empty space */
+border-radius: 8px; /* Match the card's corner rounding */
+overflow: hidden; /* Clip overflow content */
+display: flex;
+justify-content: center; /* Center the image horizontally */
+align-items: center; /* Center the image vertically */
+}
+
+.product-image img {
+width: 100%;
+height: 100%;
+object-fit: contain; /* Ensures the image fits without distortion */
+}
+
