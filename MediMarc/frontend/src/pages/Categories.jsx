@@ -1,0 +1,210 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import "../styles/Categories.css";
+import { toast } from "sonner";
+import Sidebar from "../components/Sidebar";
+
+const Categories = () => {
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+  const [editCategory, setEditCategory] = useState({ id: null, name: "" });
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      navigate("/");
+    }
+    const fetchCategories = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          console.error("Access token not found");
+          return;
+        }
+        const response = await axios.get(
+          "http://localhost:8000/api/categories/",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setCategories(response.data);
+      } catch (error) {
+        console.error(
+          "Error fetching categories:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleAddCategory = async () => {
+    if (newCategory.trim() === "") {
+      toast.warning("Category name cannot be empty.", { duration: 2000 });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.post(
+        "http://localhost:8000/api/categories/",
+        { name: newCategory.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setCategories([...categories, response.data]); // Add the new category
+      setNewCategory("");
+
+      toast.success("Category added successfully!", { duration: 2000 });
+    } catch (error) {
+      console.error(
+        "Error adding category:",
+        error.response?.data || error.message
+      );
+      toast.error("Failed to add category.", { duration: 2000 });
+    }
+  };
+
+  const handleEditCategory = async () => {
+    if (editCategory.name.trim() === "") {
+      toast.warning("Category name cannot be empty.", { duration: 2000 });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.put(
+        `http://localhost:8000/api/categories/${editCategory.id}/`,
+        { name: editCategory.name.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setCategories(
+        categories.map((cat) =>
+          cat.id === editCategory.id ? response.data : cat
+        )
+      );
+
+      setIsEditPopupOpen(false);
+
+      toast.success("Category updated successfully!", { duration: 2000 });
+    } catch (error) {
+      console.error(
+        "Error editing category:",
+        error.response?.data || error.message
+      );
+      toast.error("Failed to update category.", { duration: 2000 });
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.delete(`http://localhost:8000/api/categories/${id}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCategories(categories.filter((cat) => cat.id !== id));
+      toast.success("Category deleted successfully!", { duration: 2000 });
+    } catch (error) {
+      console.error(
+        "Error deleting category:",
+        error.response?.data || error.message
+      );
+      toast.error("Failed to delete category.", { duration: 2000 });
+    }
+  };
+
+  return (
+    <div className="categories-page ">
+      <main className="dashboard-content">
+        <div className="category-container">
+          <div className="add-category">
+            <h2>Add Category</h2>
+            <input
+              type="text"
+              placeholder="Enter Category Name"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+            />
+            <button className="confirm-btn" onClick={handleAddCategory}>
+              Confirm
+            </button>
+          </div>
+          <div className="category-list">
+            <h2>Categories</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Category</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody className="category-list">
+                {categories.map((category, index) => (
+                  <tr key={category.id}>
+                    <td>{index + 1}</td>
+                    <td>{category.name}</td>
+                    <td>
+                      <button
+                        className="categories-action-btn"
+                        style={{ color: "green" }}
+                        onClick={() => {
+                          setEditCategory(category);
+                          setIsEditPopupOpen(true);
+                        }}
+                      >
+                        ✏
+                      </button>
+                      <button
+                        className="categories-action-btn"
+                        onClick={() => handleDeleteCategory(category.id)}
+                      >
+                        🗑
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      {isEditPopupOpen && (
+        <div
+          className="edit-popup-overlay"
+          onClick={() => setIsEditPopupOpen(false)}
+        >
+          <div className="edit-popup" onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Category</h2>
+            <input
+              type="text"
+              value={editCategory.name}
+              onChange={(e) =>
+                setEditCategory({ ...editCategory, name: e.target.value })
+              }
+            />
+            <div className="edit-popup-buttons">
+              <button
+                className="discard-btn"
+                onClick={() => setIsEditPopupOpen(false)}
+              >
+                Discard
+              </button>
+              <button className="confirm-btn" onClick={handleEditCategory}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Categories;

@@ -1,0 +1,9 @@
+Django
+djangorestframework
+djangorestframework-simplejwt
+python-decouple
+django-filter
+django-cors-headers
+setuptools
+resend
+reportlab

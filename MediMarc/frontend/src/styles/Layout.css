@@ -1,0 +1,11 @@
+.layout-container {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+.layout-main {
+  padding: 20px;
+  
+}
+
