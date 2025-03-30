@@ -57,7 +57,7 @@ class ActivityLogView(APIView):
             1: "Created",
             2: "Updated",
             3: "Deleted",
-            4: "Logged In"
+            
         }
 
         data = []
@@ -65,7 +65,7 @@ class ActivityLogView(APIView):
             user = event.user
             data.append({
                 "id": event.id,
-                "username": user.username if user else "Logged In",
+                "username": user.username if user else "Login",
                 "role": user.get_user_type_display() if user else "N/A",
                 "action": action_map.get(event.event_type, "Unknown"),
                 "page": event.content_type.model.replace("_", " ").title(),
@@ -840,17 +840,17 @@ def generate_pdf_report(sales, start_date, end_date, customer_name):
         table_data.append([
             sale.date.strftime("%Y-%m-%d"),
             Paragraph(sale.product.item_code, styles["Normal"]),
-            Paragraph(sale.product.product_name, styles["Normal"]),  # ✅ Proper wrapping for long product names
-            Paragraph(f"₱{sale.total:,.2f}", ParagraphStyle(name="Normal", fontName="ArialUnicode", alignment=2)),  # ✅ Right-align for currency
+            Paragraph(sale.product.product_name, styles["Normal"]),  
+            Paragraph(f"₱{sale.total:,.2f}", ParagraphStyle(name="Normal", fontName="ArialUnicode", alignment=2)),  
             sale.product.lot_number, 
             sale.product.expiration_date.strftime("%Y-%m-%d")  
         ])
         grand_total += sale.total  
 
-    # ✅ Add Gra    
+
     table_data.append(["", "", "Grand Total", Paragraph(f"₱{grand_total:,.2f}", ParagraphStyle(name="Normal", fontName="ArialUnicode", textColor=colors.red, alignment=2)), "", ""])
 
-    # ✅ Adjust column widths properly to fit text
+  
     col_widths = [100, 80, 300, 100, 100, 100]
 
     table = Table(table_data, colWidths=col_widths)
@@ -875,6 +875,8 @@ def generate_pdf_report(sales, start_date, end_date, customer_name):
     response["Content-Disposition"] = 'attachment; filename="sales_report.pdf"'
     return response
 
+    
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def get_total_sales(request):
@@ -895,8 +897,8 @@ def get_total_sales(request):
             status="Delivered",
             date=current_day
         ).aggregate(
-            total_sales=Count("id"),  # ✅ Count total sales
-            total_revenue=Sum("total")  # ✅ Sum total revenue in pesos
+            total_sales=Count("id"),  
+            total_revenue=Sum("total")  
         )
         
         data.append({

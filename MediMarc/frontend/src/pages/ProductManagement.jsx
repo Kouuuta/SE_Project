@@ -571,7 +571,6 @@ const ProductManagement = () => {
 
               <input
                 type="date"
-                placeholder="Expiration Date"
                 value={newProduct.expirationDate}
                 onChange={(e) =>
                   setNewProduct({
@@ -579,6 +578,7 @@ const ProductManagement = () => {
                     expirationDate: e.target.value,
                   })
                 }
+                min={new Date().toISOString().split("T")[0]} // Prevent past dates
               />
               <input
                 type="text"
@@ -715,6 +715,7 @@ const ProductManagement = () => {
                     expiration_date: e.target.value,
                   })
                 }
+                min={new Date().toISOString().split("T")[0]} // Prevent past dates
               />
 
               <input

@@ -580,10 +580,11 @@ const Sales = () => {
                 />
                 <input
                   type="date"
-                  value={editSale.date}
+                  value={newSale.date}
                   onChange={(e) =>
-                    setEditSale({ ...editSale, date: e.target.value })
+                    setNewSale({ ...newSale, date: e.target.value })
                   }
+                  min={new Date().toISOString().split("T")[0]} // Prevent past dates
                 />
                 <div className="modal-actions">
                   <button
@@ -700,7 +701,9 @@ const Sales = () => {
                   onChange={(e) =>
                     setNewSale({ ...newSale, date: e.target.value })
                   }
+                  min={new Date().toISOString().split("T")[0]} // Prevent past dates
                 />
+
                 <div className="modal-actions">
                   <button
                     className="discard-btn"
