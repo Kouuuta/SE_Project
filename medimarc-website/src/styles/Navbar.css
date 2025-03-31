@@ -90,11 +90,35 @@
   
   .mobile-menu-button {
     display: none;
+    background: none; /* Remove background */
+    border: none; /* Remove border */
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: transform 0.3s ease-in-out; /* Smooth animation */
+  }
+  
+  .mobile-menu-button:focus {
+    outline: none; /* Remove focus outline */
+  }
+  
+  .mobile-menu-button .lucide-menu { 
+    color: #4b5563; /* Set color for MenuIcon */
+    font-size: 2rem; /* Increase size */
+    transition: transform 0.3s ease, color 0.3s ease; /* Smooth color transition and animation */
+  }
+  
+  .mobile-menu-button:hover .lucide-menu {
+    color: #b37aff; /* Change color on hover */
+    transform: scale(1.1); /* Slightly increase size when hovered */
+  }
+  
+  .mobile-menu-button:active .lucide-menu {
+    transform: rotate(90deg); /* Rotate 90deg on click */
   }
   
   .mobile-nav {
     display: none;
-    background-color: #b37aff;
+    background-color: white;
     border-top: 1px solid #e5e7eb;
   }
   

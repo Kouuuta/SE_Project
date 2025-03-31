@@ -2,13 +2,12 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProductList from "./components/ProductList";
-import "./index.css";
 import Home from "./components/Home";
 import ProductDetails from "./components/ProductDetails";
 
 function App() {
   const handleCategorySelection = (category: any) => {
-    // You can handle category selection here
+    // Handle category selection here
     console.log("Category selected:", category);
   };
 
@@ -24,7 +23,7 @@ function App() {
               element={
                 <ProductList onSelectCategory={handleCategorySelection} />
               }
-            />{" "}
+            />
             <Route path="/products/:categoryId" element={<ProductDetails />} />
           </Routes>
         </div>

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { MenuIcon, X } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom"; // Regular Link for routing
-import { Link } from "react-scroll"; // Import Link from react-scroll for scrolling
 import "../styles/Navbar.css";
 
 const Navbar = () => {
@@ -30,30 +29,25 @@ const Navbar = () => {
         </div>
         {/* Desktop Navigation */}
         <nav className="desktop-nav">
-          <RouterLink to="/" className="nav-link">
+          <a href="/#" className="nav-link">
             Home
             <div className="nav-link-underline"></div>
-          </RouterLink>
+          </a>
           <RouterLink to="/products" className="nav-link">
             {" "}
             Products
             <div className="nav-link-underline"></div>
           </RouterLink>
-          <Link to="about-us" smooth={true} duration={500} className="nav-link">
+          <a href="/#about-us" className="nav-link">
             {" "}
             About Us
             <div className="nav-link-underline"></div>
-          </Link>
-          <Link
-            to="contact-us"
-            smooth={true}
-            duration={500}
-            className="nav-link"
-          >
+          </a>
+          <a href="/#contact-us" className="nav-link">
             {" "}
             Contacts
             <div className="nav-link-underline"></div>
-          </Link>
+          </a>
         </nav>
         {/* Mobile Menu Button */}
         <button
@@ -74,22 +68,12 @@ const Navbar = () => {
               <RouterLink to="/products" className="mobile-nav-link">
                 Products
               </RouterLink>
-              <Link
-                to="about-us"
-                smooth={true}
-                duration={500}
-                className="mobile-nav-link"
-              >
+              <a href="#about-us" className="mobile-nav-link">
                 About Us
-              </Link>
-              <Link
-                to="contact-us"
-                smooth={true}
-                duration={500}
-                className="mobile-nav-link"
-              >
+              </a>
+              <a href="#contact-us" className="mobile-nav-link">
                 Contact
-              </Link>
+              </a>
             </nav>
           </div>
         </div>

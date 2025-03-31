@@ -22,7 +22,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="text-container">
         <h3 className="product-title">{product.name}</h3>
         <p className="product-description">{product.description}</p>
-        <button className="add-to-cart-button">View Product</button>
+        <button className="add-to-cart-button"></button>
       </div>
     </div>
   );
