@@ -765,6 +765,7 @@ class GenerateSalesReport(APIView):
         filtered_sales = SalesFilter(request.GET, queryset=sales).qs
 
         item_code = request.GET.get("item_code", "").strip()
+        customer_name = request.GET.get("customer_name", "").strip()
         if item_code:
             filtered_sales = filtered_sales.filter(product__item_code=item_code)
 
@@ -827,7 +828,7 @@ def generate_pdf_report(sales, start_date, end_date, customer_name):
     header_style = ParagraphStyle(name="Header", fontSize=12, alignment=1, spaceAfter=5, fontName="Helvetica-Bold")
 
     title = Paragraph("MediMarc Trading Inventory - Sales Report", title_style)
-    date_range = Paragraph(f"<b>TILL DATE</b>", header_style)
+    date_range = Paragraph(f"<b>{start_date}TILL DATE{start_end}</b>", header_style)
     customer = Paragraph(f"<b>{customer_name}</b>", header_style)
 
     elements.extend([title, date_range, customer, Spacer(1, 15)])
@@ -875,7 +876,6 @@ def generate_pdf_report(sales, start_date, end_date, customer_name):
     response["Content-Disposition"] = 'attachment; filename="sales_report.pdf"'
     return response
 
-    
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

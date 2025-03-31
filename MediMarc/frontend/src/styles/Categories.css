@@ -45,9 +45,20 @@
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  
 }
-
+.categories-confirm-btn {
+  background: #6a5acd;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 99px;
+}
+.categories-confirm-btn:hover {
+  background: #5a49b3;
+}
 .categories-page .confirm-btn:hover {
   background: #5a49b3;
 }

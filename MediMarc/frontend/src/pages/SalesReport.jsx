@@ -1,21 +1,23 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
 import "../styles/SalesReport.css";
+import "../styles/Sales.css";
 
 const SalesReport = () => {
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
-  const [customer, setCustomer] = useState("");
-  const [customers, setCustomers] = useState([]); // Stores customer list
-  const [products, setProducts] = useState([]); // Stores product list
-  const [itemCode, setItemCode] = useState("");
+  const [customer, setCustomer] = useState(null);
+  const [customers, setCustomers] = useState([]);
   const [sales, setSales] = useState([]);
+  const [filteredSales, setFilteredSales] = useState([]);
+  const [itemCode, setItemCode] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      navigate("/"); // Redirect to login if no token found
+      navigate("/");
     }
   }, []);
 
@@ -35,21 +37,6 @@ const SalesReport = () => {
       }
     };
 
-    const fetchProducts = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const response = await axios.get(
-          "http://localhost:8000/api/products/",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setProducts(response.data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
-
     const fetchSales = async () => {
       try {
         const token = localStorage.getItem("access_token");
@@ -57,45 +44,44 @@ const SalesReport = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setSales(response.data); // ✅ Ensures data is properly set
+        setSales(response.data);
       } catch (error) {
-        console.error(
-          "Error fetching sales:",
-          error.response?.data || error.message
-        );
-        setSales([]); // ✅ Prevents undefined state
+        console.error("Error fetching sales:", error);
       }
     };
 
     fetchCustomers();
-    fetchProducts();
     fetchSales();
   }, []);
 
-  console.log(sales);
+  useEffect(() => {
+    if (customer) {
+      const filtered = sales.filter(
+        (sale) => sale.customer_name === customer.label
+      );
+      setFilteredSales(filtered);
+    } else {
+      setFilteredSales([]);
+    }
+  }, [customer, sales]);
 
   const handleGenerateReport = async (format) => {
     try {
       const token = localStorage.getItem("access_token");
-
       const params = new URLSearchParams({
         start_date: dateRange.start || "",
         end_date: dateRange.end || "",
-        customer_name: customer || "",
-        item_code: itemCode || "",
-        format_type: format, // 'csv' or 'pdf'
+        customer_name: customer?.label || "",
+        item_code: itemCode?.value === "all" ? "" : itemCode?.value || "",
+        format_type: format,
       });
 
       const url = `http://127.0.0.1:8000/api/sales-report/?${params.toString()}`;
-
-      console.log("📌 Fetching URL:", url);
 
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: "blob",
       });
-
-      console.log("✅ Response:", response);
 
       if (response.status !== 200) {
         throw new Error(`Server responded with status ${response.status}`);
@@ -114,24 +100,28 @@ const SalesReport = () => {
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error("❌ Error generating report:", error);
+      console.error("Error generating report:", error);
     }
   };
 
-  const handleLogout = () => {
-    // ✅ Clear authentication data
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
+  const customerOptions = customers.map((c) => ({
+    label: c.name,
+    value: c.id,
+  }));
 
-    // ✅ Redirect to login page
-    window.location.href = "/";
-
-    // ✅ Prevent back navigation after logout
-    setTimeout(() => {
-      window.history.replaceState(null, null, "/");
-    }, 0);
-  };
+  const itemOptions = customer
+    ? [
+        { label: "All Item Codes", value: "all" },
+        ...Array.from(
+          new Map(
+            filteredSales.map((s) => [
+              s.item_code,
+              { label: `${s.item_code}`, value: s.item_code },
+            ])
+          ).values()
+        ),
+      ]
+    : [];
 
   return (
     <div className="sales-report-page">
@@ -139,7 +129,6 @@ const SalesReport = () => {
         <div className="sales-report-form">
           <h2>Sales Report</h2>
 
-          {/* Date Range Inputs */}
           <label>Date Range</label>
           <div className="date-range">
             <input
@@ -159,32 +148,28 @@ const SalesReport = () => {
             />
           </div>
 
-          {/* Customer Dropdown */}
           <label>Customer</label>
-          <select
-            value={customer}
-            onChange={(e) => setCustomer(e.target.value)}
-          >
-            <option value="">Select Customer</option>
-            {customers.map((cust) => (
-              <option key={cust.id} value={cust.name}>
-                {cust.name}
-              </option>
-            ))}
-          </select>
+          <div className="custom-react-select">
+            <Select
+              options={customerOptions}
+              value={customer}
+              onChange={setCustomer}
+              placeholder="Select Customer"
+              classNamePrefix="react-select"
+            />
+          </div>
 
           <label>Item Code</label>
-          <select
-            value={itemCode}
-            onChange={(e) => setItemCode(e.target.value)}
-          >
-            <option value="">Select Item Code</option>
-            {products.map((product) => (
-              <option key={product.product_id} value={product.item_code}>
-                {product.item_code} - {product.lot_number}
-              </option>
-            ))}
-          </select>
+          <div className="custom-react-select">
+            <Select
+              options={itemOptions}
+              value={itemCode}
+              onChange={setItemCode}
+              placeholder="Select Item Code"
+              isDisabled={!customer}
+              classNamePrefix="react-select"
+            />
+          </div>
 
           <div className="report-buttons">
             <button

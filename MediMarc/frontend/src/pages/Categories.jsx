@@ -196,7 +196,10 @@ const Categories = () => {
               >
                 Discard
               </button>
-              <button className="confirm-btn" onClick={handleEditCategory}>
+              <button
+                className="categories-confirm-btn"
+                onClick={handleEditCategory}
+              >
                 Confirm
               </button>
             </div>
