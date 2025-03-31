@@ -828,7 +828,7 @@ def generate_pdf_report(sales, start_date, end_date, customer_name):
     header_style = ParagraphStyle(name="Header", fontSize=12, alignment=1, spaceAfter=5, fontName="Helvetica-Bold")
 
     title = Paragraph("MediMarc Trading Inventory - Sales Report", title_style)
-    date_range = Paragraph(f"<b>{start_date}TILL DATE{start_end}</b>", header_style)
+    date_range = Paragraph(f"<b>{start_date} -TILL DATE- {end_date}</b>", header_style)
     customer = Paragraph(f"<b>{customer_name}</b>", header_style)
 
     elements.extend([title, date_range, customer, Spacer(1, 15)])
