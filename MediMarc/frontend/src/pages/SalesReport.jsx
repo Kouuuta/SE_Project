@@ -56,9 +56,10 @@ const SalesReport = () => {
 
   useEffect(() => {
     if (customer) {
-      const filtered = sales.filter(
-        (sale) => sale.customer_name === customer.label
-      );
+      const filtered =
+        customer.value === "all"
+          ? sales
+          : sales.filter((sale) => sale.customer_name === customer.label);
       setFilteredSales(filtered);
     } else {
       setFilteredSales([]);
@@ -71,7 +72,10 @@ const SalesReport = () => {
       const params = new URLSearchParams({
         start_date: dateRange.start || "",
         end_date: dateRange.end || "",
-        customer_name: customer?.label || "",
+        customer_name:
+          customer?.label === "All Customers" || !customer?.label
+            ? ""
+            : customer.label,
         item_code: itemCode?.value === "all" ? "" : itemCode?.value || "",
         format_type: format,
       });
@@ -104,23 +108,35 @@ const SalesReport = () => {
     }
   };
 
-  const customerOptions = customers.map((c) => ({
-    label: c.name,
-    value: c.id,
-  }));
+  const customerOptions = [
+    { label: "All Customers", value: "all" },
+    ...customers.map((c) => ({ label: c.name, value: c.id })),
+  ];
 
   const itemOptions = customer
-    ? [
-        { label: "All Item Codes", value: "all" },
-        ...Array.from(
-          new Map(
-            filteredSales.map((s) => [
-              s.item_code,
-              { label: `${s.item_code}`, value: s.item_code },
-            ])
-          ).values()
-        ),
-      ]
+    ? customer.value === "all"
+      ? [
+          { label: "All Item Codes", value: "all" },
+          ...Array.from(
+            new Map(
+              sales.map((s) => [
+                s.item_code,
+                { label: `${s.item_code}`, value: s.item_code },
+              ])
+            ).values()
+          ),
+        ]
+      : [
+          { label: "All Item Codes", value: "all" },
+          ...Array.from(
+            new Map(
+              filteredSales.map((s) => [
+                s.item_code,
+                { label: `${s.item_code}`, value: s.item_code },
+              ])
+            ).values()
+          ),
+        ]
     : [];
 
   return (
@@ -142,6 +158,7 @@ const SalesReport = () => {
             <input
               type="date"
               value={dateRange.end}
+              disabled={!dateRange.start}
               onChange={(e) =>
                 setDateRange({ ...dateRange, end: e.target.value })
               }
@@ -164,9 +181,9 @@ const SalesReport = () => {
             <Select
               options={itemOptions}
               value={itemCode}
+              disabled={!customer}
               onChange={setItemCode}
               placeholder="Select Item Code"
-              isDisabled={!customer}
               classNamePrefix="react-select"
             />
           </div>

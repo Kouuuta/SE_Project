@@ -796,79 +796,100 @@ def generate_csv_report(sales):
     writer = csv.writer(response)
 
     # ✅ Include new columns
-    writer.writerow(["Item Code","Product Name", "Date", "Total Sale", "Lot Number", "Expiration Date", "Customer"])
+    writer.writerow(["SI No.", "Date Invoice", "Item Code", "Customer", "Product Name", "Quantity", "Total Sale", "Lot Number", "Expiration Date"])
 
     for sale in sales:
         writer.writerow([
+            f"{sale.id:04}",
+            sale.date.strftime("%Y-%m-%d"), 
             sale.product.item_code,
+            sale.customer.name, 
             sale.product.product_name,
-            sale.date.strftime("%Y-%m-%d"),  
+            sale.quantity,
             sale.total,
             sale.product.lot_number,  
             sale.product.expiration_date.strftime("%Y-%m-%d"),  
-            sale.customer.name
         ])
 
     return response
 
 
 def generate_pdf_report(sales, start_date, end_date, customer_name):
-    """Generate a formatted PDF Sales Report with Lot Number & Expiration Date."""
+    """Generate a formatted PDF Sales Report with SI No. from sale.id, Quantity, and Customer."""
     pdfmetrics.registerFont(TTFont("ArialUnicode", "arial.ttf"))
     buffer = BytesIO()
-    
-    # ✅ Use Landscape to fit more columns
-    pdf = SimpleDocTemplate(buffer, pagesize=landscape(letter), rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
-    
+
+    pdf = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(letter),
+        rightMargin=15, leftMargin=15, topMargin=20, bottomMargin=20
+    )
+
     elements = []
     styles = getSampleStyleSheet()
 
-    # **Title and Header**
+    # Styles
     title_style = ParagraphStyle(name="Title", fontSize=16, alignment=1, spaceAfter=10, fontName="Helvetica-Bold")
     header_style = ParagraphStyle(name="Header", fontSize=12, alignment=1, spaceAfter=5, fontName="Helvetica-Bold")
+    body_style = ParagraphStyle(name="Normal", fontName="ArialUnicode", fontSize=8.5)
+    right_align_style = ParagraphStyle(name="RightAlign", fontName="ArialUnicode", alignment=2, fontSize=8.5)
+    total_style = ParagraphStyle(name="Total", fontName="ArialUnicode", alignment=2, textColor=colors.red, fontSize=9.5)
 
+    # Title/Header
     title = Paragraph("MediMarc Trading Inventory - Sales Report", title_style)
     date_range = Paragraph(f"<b>{start_date} -TILL DATE- {end_date}</b>", header_style)
-    customer = Paragraph(f"<b>{customer_name}</b>", header_style)
+    customer_display = Paragraph(f"<b>{customer_name}</b>", header_style)
 
-    elements.extend([title, date_range, customer, Spacer(1, 15)])
+    elements.extend([title, date_range, customer_display, Spacer(1, 15)])
 
-    
-    table_data = [["Date", "Item Code", "Product Name", "Total Sale", "Lot Number", "Expiration Date"]]
-    grand_total = 0  
+    # Table headers
+    table_data = [["SI No.", "Date Invoice", "Item Code", "Customer", "Product Name", "Quantity", "Total Sale", "Lot Number", "Expiration Date"]]
+    grand_total = 0
 
     for sale in sales:
         table_data.append([
+            f"{sale.id:04}",
             sale.date.strftime("%Y-%m-%d"),
-            Paragraph(sale.product.item_code, styles["Normal"]),
-            Paragraph(sale.product.product_name, styles["Normal"]),  
-            Paragraph(f"₱{sale.total:,.2f}", ParagraphStyle(name="Normal", fontName="ArialUnicode", alignment=2)),  
-            sale.product.lot_number, 
-            sale.product.expiration_date.strftime("%Y-%m-%d")  
+            sale.product.item_code,
+            Paragraph(sale.customer.name, body_style),
+            Paragraph(sale.product.product_name, body_style),
+            sale.quantity,
+            Paragraph(f"₱{sale.total:,.2f}", right_align_style),
+            sale.product.lot_number,
+            sale.product.expiration_date.strftime("%Y-%m-%d")
         ])
-        grand_total += sale.total  
+        grand_total += sale.total
 
+    # Grand total row
+    table_data.append([
+        "", "", "", "", "Grand Total", "",
+        Paragraph(f"₱{grand_total:,.2f}", total_style),
+        "", ""
+    ])
 
-    table_data.append(["", "", "Grand Total", Paragraph(f"₱{grand_total:,.2f}", ParagraphStyle(name="Normal", fontName="ArialUnicode", textColor=colors.red, alignment=2)), "", ""])
+    # Optimized column widths for full page fit
+    col_widths = [35, 65, 75, 90, 250, 45, 80, 70, 80]
 
-  
-    col_widths = [100, 80, 300, 100, 100, 100]
-
+    # Build and style table
     table = Table(table_data, colWidths=col_widths)
     table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),  
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),  
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),  
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),  
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-        ("GRID", (0, 0), (-1, -1), 1, colors.black),  
-        ("TEXTCOLOR", (-3, -1), (-3, -1), colors.red),  
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),  
+        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TEXTCOLOR", (6, -1), (6, -1), colors.red),
+        ("FONTSIZE", (0, 1), (-1, -1), 8.5),
+        ("WORDWRAP", (3, 1), (3, -2), "CJK"),  
+        ("WORDWRAP", (4, 1), (4, -2), "CJK"),  
     ]))
 
     elements.append(table)
     pdf.build(elements)
 
+    # Return response
     pdf_data = buffer.getvalue()
     buffer.close()
 

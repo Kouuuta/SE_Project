@@ -451,12 +451,13 @@ const Sales = () => {
               <table>
                 <thead>
                   <tr>
+                    <th>SI No.</th>
+                    <th>Date Invoice</th>
                     <th>Product ID</th>
                     <th>Item Code</th>
                     <th>Product Name</th>
                     <th>Quantity</th>
                     <th>Total</th>
-                    <th>Date Created</th>
                     <th>Lot Number</th>
                     <th>Expiration Date</th>
                     <th>Status</th>
@@ -470,14 +471,16 @@ const Sales = () => {
                         (sale) =>
                           sale.customer === parseInt(selectedCustomer, 10)
                       )
+                      .sort((a, b) => b.id - a.id)
                       .map((sale, index) => (
                         <tr key={`${sale.id}-${index}`}>
+                          <td>{String(sale.id).padStart(4, "0")}</td>
+                          <td>{sale.date}</td>
                           <td>{sale.product_id}</td>
                           <td>{sale.item_code}</td>
                           <td>{sale.product_name}</td>
                           <td>{sale.quantity}</td>
                           <td>₱{sale.total}</td>
-                          <td>{sale.date}</td>
                           <td>{sale.lot_number}</td>
                           <td>{sale.expiration_date}</td>
                           <td>
@@ -486,15 +489,14 @@ const Sales = () => {
                               value={sale.status}
                               onChange={(e) =>
                                 handleStatusChange(sale.id, e.target.value)
-                              } // ✅ Use sale.id
-                              disabled={sale.status === "Delivered"} //
+                              }
+                              disabled={sale.status === "Delivered"}
                             >
                               <option value="Pending">Pending</option>
                               <option value="Cancelled">Cancelled</option>
                               <option value="Delivered">Delivered</option>
                             </select>
                           </td>
-
                           <td>
                             <button
                               className="sales-action-btn"
@@ -545,6 +547,14 @@ const Sales = () => {
               <h2>Edit Sale</h2>
               <form>
                 <input
+                  type="date"
+                  value={newSale.date}
+                  onChange={(e) =>
+                    setNewSale({ ...newSale, date: e.target.value })
+                  }
+                  min={new Date().toISOString().split("T")[0]} // Prevent past dates
+                />
+                <input
                   type="text"
                   disabled
                   placeholder="Product ID"
@@ -578,14 +588,6 @@ const Sales = () => {
                   value={editSale.total}
                   readOnly
                 />
-                <input
-                  type="date"
-                  value={newSale.date}
-                  onChange={(e) =>
-                    setNewSale({ ...newSale, date: e.target.value })
-                  }
-                  min={new Date().toISOString().split("T")[0]} // Prevent past dates
-                />
                 <div className="modal-actions">
                   <button
                     className="discard-btn"
@@ -616,9 +618,17 @@ const Sales = () => {
             >
               <h2>Add Sale</h2>
               <form>
+                <input
+                  type="date"
+                  value={newSale.date}
+                  onChange={(e) =>
+                    setNewSale({ ...newSale, date: e.target.value })
+                  }
+                  min={new Date().toISOString().split("T")[0]} // Prevent past dates
+                />
                 <Select
                   options={products.map((product) => ({
-                    value: product.product_id, // ✅ This should be the same as Product Management
+                    value: product.product_id,
                     label: `${product.item_code} - ${product.lot_number}`,
                   }))}
                   className="custom-react-add-select"
@@ -693,15 +703,6 @@ const Sales = () => {
                   placeholder="Expiration Date"
                   value={newSale.expirationDate}
                   readOnly
-                />
-
-                <input
-                  type="date"
-                  value={newSale.date}
-                  onChange={(e) =>
-                    setNewSale({ ...newSale, date: e.target.value })
-                  }
-                  min={new Date().toISOString().split("T")[0]} // Prevent past dates
                 />
 
                 <div className="modal-actions">

@@ -434,46 +434,48 @@ const ProductManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
-                <tr key={product.id || product.item_code || Math.random()}>
-                  <td>{product.product_id}</td>
-                  <td
-                    style={{
-                      color: "red",
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                      fontFamily: "sans-serif",
-                    }}
-                    onClick={() => handleItemCodeClick(product.product_id)}
-                  >
-                    {product.item_code}
-                  </td>
-                  <td>{product.product_name || "N/A"}</td>
-                  <td>
-                    {product.category ? product.category : "Uncategorized"}
-                  </td>
-                  <td>{product.stock !== null ? product.stock : 0}</td>
-                  <td>
-                    {product.selling_price
-                      ? `₱${product.selling_price.toLocaleString()}`
-                      : "N/A"}
-                  </td>
-                  <td>
-                    <button
-                      className="product-management-page edit-btn"
-                      onClick={() => openEditProduct(product)}
+              {[...products]
+                .sort((a, b) => b.product_id.localeCompare(a.product_id))
+                .map((product) => (
+                  <tr key={product.id || product.item_code || Math.random()}>
+                    <td>{product.product_id}</td>
+                    <td
+                      style={{
+                        color: "red",
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        fontFamily: "sans-serif",
+                      }}
+                      onClick={() => handleItemCodeClick(product.product_id)}
                     >
-                      ✏
-                    </button>
-                    <button
-                      className="product-management-page delete-btn"
-                      onClick={() => handleDeleteProduct(product.product_id)}
-                    >
-                      🗑
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      {product.item_code}
+                    </td>
+                    <td>{product.product_name || "N/A"}</td>
+                    <td>
+                      {product.category ? product.category : "Uncategorized"}
+                    </td>
+                    <td>{product.stock !== null ? product.stock : 0}</td>
+                    <td>
+                      {product.selling_price
+                        ? `₱${product.selling_price.toLocaleString()}`
+                        : "N/A"}
+                    </td>
+                    <td>
+                      <button
+                        className="product-management-page edit-btn"
+                        onClick={() => openEditProduct(product)}
+                      >
+                        ✏
+                      </button>
+                      <button
+                        className="product-management-page delete-btn"
+                        onClick={() => handleDeleteProduct(product.product_id)}
+                      >
+                        🗑
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -517,18 +519,18 @@ const ProductManagement = () => {
             <form>
               <input
                 type="text"
-                placeholder="Enter Item Code"
-                value={newProduct.itemCode}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, itemCode: e.target.value })
-                }
-              />
-              <input
-                type="text"
                 placeholder="Enter Product ID"
                 value={newProduct.productId}
                 onChange={(e) =>
                   setNewProduct({ ...newProduct, productId: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Enter Item Code"
+                value={newProduct.itemCode}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, itemCode: e.target.value })
                 }
               />
               <input
@@ -616,7 +618,7 @@ const ProductManagement = () => {
               <Select
                 options={products.map((product) => ({
                   value: product.product_id,
-                  label: `${product.item_code} - ID ${product.product_id}`,
+                  label: `${product.item_code} - ${product.lot_number}`,
                 }))}
                 className="custom-react-stock-select"
                 classNamePrefix="react-select"
