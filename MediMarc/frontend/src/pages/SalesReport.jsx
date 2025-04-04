@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 import "../styles/SalesReport.css";
 import "../styles/Sales.css";
+import { toast } from "sonner";
 
 const SalesReport = () => {
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
@@ -68,10 +69,26 @@ const SalesReport = () => {
 
   const handleGenerateReport = async (format) => {
     try {
+      const start = dateRange.start;
+      const end = dateRange.end;
+
+      // ⛔ Check if there are sales in the selected range
+      const filteredByDate = sales.filter((sale) => {
+        const saleDate = new Date(sale.date);
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        return saleDate >= startDate && saleDate <= endDate;
+      });
+
+      if (filteredByDate.length === 0) {
+        toast.error("No sales found in the selected date range.");
+        return;
+      }
+
       const token = localStorage.getItem("access_token");
       const params = new URLSearchParams({
-        start_date: dateRange.start || "",
-        end_date: dateRange.end || "",
+        start_date: start || "",
+        end_date: end || "",
         customer_name:
           customer?.label === "All Customers" || !customer?.label
             ? ""
@@ -105,6 +122,7 @@ const SalesReport = () => {
       document.body.removeChild(link);
     } catch (error) {
       console.error("Error generating report:", error);
+      toast.error("Something went wrong while generating the report.");
     }
   };
 

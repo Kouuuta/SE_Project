@@ -43,6 +43,51 @@ from reportlab.pdfbase import pdfmetrics
 from django.shortcuts import get_object_or_404
 from easyaudit.models import CRUDEvent
 from rest_framework.views import APIView
+from django.core.paginator import Paginator
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_daily_sales(request):
+    """Returns today's sales (paginated, 5 per page)"""
+    today = timezone.now().date()
+    sales = Sale.objects.filter(date=today, status="Delivered").order_by("-id")
+
+    paginator = Paginator(sales, 5)
+    page_number = request.GET.get("page", 1)
+    page = paginator.get_page(page_number)
+
+    serialized = SaleSerializer(page.object_list, many=True)
+    return Response({
+        "sales": serialized.data,
+        "has_next": page.has_next(),
+        "has_previous": page.has_previous(),
+        "total_pages": paginator.num_pages,
+        "current_page": page.number
+    })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_monthly_sales(request):
+    """Returns this month’s sales (paginated, 5 per page)"""
+    now = timezone.now()
+    start_month = now.replace(day=1)
+    end_month = now.replace(day=1) + timedelta(days=32)
+    end_month = end_month.replace(day=1)
+
+    sales = Sale.objects.filter(date__gte=start_month, date__lt=end_month, status="Delivered").order_by("-id")
+
+    paginator = Paginator(sales, 5)
+    page_number = request.GET.get("page", 1)
+    page = paginator.get_page(page_number)
+
+    serialized = SaleSerializer(page.object_list, many=True)
+    return Response({
+        "sales": serialized.data,
+        "has_next": page.has_next(),
+        "has_previous": page.has_previous(),
+        "total_pages": paginator.num_pages,
+        "current_page": page.number
+    })
 
 
 class ActivityLogView(APIView):

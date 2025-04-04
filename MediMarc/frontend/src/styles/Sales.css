@@ -440,6 +440,52 @@
   animation: spin 0.7s linear infinite;
 }
 
+/* Specific styling for Daily and Monthly Sales tables */
+.sales-page .sales-summary .sales-daily,
+.sales-page .sales-summary .sales-monthly {
+  display: flex;
+  flex-direction: column;
+}
+
+.sales-page .sales-summary .sales-daily table,
+.sales-page .sales-summary .sales-monthly table {
+  table-layout: fixed;
+  word-wrap: break-word;
+  font-size: 14px;
+}
+
+.sales-page .sales-summary .sales-daily td,
+.sales-page .sales-summary .sales-monthly td {
+  font-size: 13px;
+}
+
+.sales-page .sales-summary .pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.sales-page .sales-summary .pagination button {
+  padding: 6px 12px;
+  background: #6a5acd;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.sales-page .sales-summary .pagination button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.sales-page .sales-summary .pagination span {
+  font-size: 13px;
+  color: #333;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

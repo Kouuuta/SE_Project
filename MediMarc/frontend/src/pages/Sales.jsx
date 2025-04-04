@@ -9,14 +9,30 @@ import { confirmDialog } from "primereact/confirmdialog";
 const Sales = () => {
   const navigate = useNavigate();
   const [sales, setSales] = useState([]); // ✅ Ensures sales is never undefined
-  const [dailySales, setDailySales] = useState([]);
-  const [monthlySales, setMonthlySales] = useState([]);
+  const [dailyPage, setDailyPage] = useState(1);
+  const [monthlyPage, setMonthlyPage] = useState(1);
   const [page, setPage] = useState(1);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [isEditSaleOpen, setIsEditSaleOpen] = useState(false);
   const [editSale, setEditSale] = useState(null);
+
+  const [dailySales, setDailySales] = useState({
+    results: [],
+    current_page: 1,
+    total_pages: 1,
+    has_next: false,
+    has_previous: false,
+  });
+
+  const [monthlySales, setMonthlySales] = useState({
+    results: [],
+    current_page: 1,
+    total_pages: 1,
+    has_next: false,
+    has_previous: false,
+  });
 
   const customerOptions = customers.map((customer) => ({
     value: customer.id,
@@ -66,31 +82,34 @@ const Sales = () => {
     fetchSales();
   }, []);
 
-  const fetchSummarySales = async () => {
-    try {
-      const token = localStorage.getItem("access_token");
-      const dailyResponse = await axios.get(
-        "http://localhost:8000/api/sales/daily",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setDailySales(dailyResponse.data);
+  useEffect(() => {
+    const fetchSummarySales = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
 
-      const monthlyResponse = await axios.get(
-        "http://localhost:8000/api/sales/monthly",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setMonthlySales(monthlyResponse.data);
-    } catch (error) {
-      console.error(
-        "Error fetching summary sales:",
-        error.response?.data || error.message
-      );
-    }
-  };
+        const [dailyRes, monthlyRes] = await Promise.all([
+          axios.get(
+            `http://localhost:8000/api/sales/daily/?page=${dailyPage}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          ),
+          axios.get(
+            `http://localhost:8000/api/sales/monthly/?page=${monthlyPage}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          ),
+        ]);
+
+        setDailySales(dailyRes.data);
+        setMonthlySales(monthlyRes.data);
+      } catch (error) {
+        console.error("Error fetching sales summaries:", error);
+      }
+    };
+    fetchSummarySales();
+  }, [dailyPage, monthlyPage]);
 
   const handleLogout = () => {
     // ✅ Clear authentication data
@@ -209,7 +228,6 @@ const Sales = () => {
 
     // ✅ Now use fetchDropdownData in useEffect
     fetchDropdownData();
-    fetchSummarySales();
   }, [page]);
 
   const openAddSale = () => setIsAddSaleOpen(true);
@@ -386,16 +404,16 @@ const Sales = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>Product Name</th>
+                    <th>Item Code</th>
                     <th>Quantity Sold</th>
                     <th>Total</th>
                     <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {dailySales.map((sale, index) => (
+                  {dailySales?.results?.map((sale, index) => (
                     <tr key={index}>
-                      <td>{sale.productName}</td>
+                      <td>{sale.itemCode}</td>
                       <td>{sale.quantity}</td>
                       <td>{`$${sale.total}`}</td>
                       <td>{sale.date}</td>
@@ -403,6 +421,24 @@ const Sales = () => {
                   ))}
                 </tbody>
               </table>
+              <div className="pagination">
+                <button
+                  onClick={() => setDailyPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={!dailySales.has_previous}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {dailySales.current_page || 1} of{" "}
+                  {dailySales.total_pages || 1}
+                </span>
+                <button
+                  onClick={() => setDailyPage((prev) => prev + 1)}
+                  disabled={!dailySales.has_next}
+                >
+                  Next
+                </button>
+              </div>
             </div>
 
             <div className="sales-monthly">
@@ -410,14 +446,14 @@ const Sales = () => {
               <table>
                 <thead>
                   <tr>
-                    <th>Product Name</th>
+                    <th>Item Code</th>
                     <th>Quantity</th>
                     <th>Total</th>
                     <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {monthlySales.map((sale, index) => (
+                  {monthlySales?.results?.map((sale, index) => (
                     <tr key={index}>
                       <td>{sale.productName}</td>
                       <td>{sale.quantity}</td>
@@ -427,6 +463,26 @@ const Sales = () => {
                   ))}
                 </tbody>
               </table>
+              <div className="pagination">
+                <button
+                  onClick={() =>
+                    setMonthlyPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={!monthlySales.has_previous}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {monthlySales.current_page || 1} of{" "}
+                  {monthlySales.total_pages || 1}
+                </span>
+                <button
+                  onClick={() => setMonthlyPage((prev) => prev + 1)}
+                  disabled={!monthlySales.has_next}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
 

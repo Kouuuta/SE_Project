@@ -67,4 +67,7 @@ urlpatterns = [
     path("products/recent/", views.get_recently_added_products, name="get_recently_added_products"),
     path("products/low-stock/", views.get_low_stock_products, name="get_low_stock_products"),
     path("activity-logs/", ActivityLogView.as_view(), name="activity_log_class"),
+    path("sales/daily/", views.get_daily_sales),
+    path("sales/monthly/", views.get_monthly_sales),
+
 ]
