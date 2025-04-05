@@ -62,16 +62,17 @@ const Navbar = () => {
         <div className="mobile-nav">
           <div className="mobile-nav-container">
             <nav className="mobile-nav-links">
-              <RouterLink to="/" className="mobile-nav-link">
+              <a href="/#" className="nav-link">
                 Home
-              </RouterLink>
+                <div className="nav-link-underline"></div>
+              </a>
               <RouterLink to="/products" className="mobile-nav-link">
                 Products
               </RouterLink>
-              <a href="#about-us" className="mobile-nav-link">
+              <a href="/#about-us" className="mobile-nav-link">
                 About Us
               </a>
-              <a href="#contact-us" className="mobile-nav-link">
+              <a href="/#contact-us" className="mobile-nav-link">
                 Contact
               </a>
             </nav>

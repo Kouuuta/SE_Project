@@ -8,7 +8,7 @@ const FeaturedProducts = () => {
       name: "NIPRO Syringes",
       description:
         "Nipro’s syringes are available in a variety of combinations: from 2- or 3-part, with or without needle, fixed insulin needle, and three different luer tips.",
-      image: "nipro-syringes.png",
+      image: "syringes-withneedles.png",
     },
     {
       id: 2,

@@ -17,7 +17,7 @@ const Contact = () => {
                 <div className="contact-item">
                   <Facebook className="icon" />
                   <div>
-                    <h3 className="contact-name">MediMarc Trading</h3>
+                    <h3 className="contact-name">Medimarc Trading</h3>
                   </div>
                 </div>
                 <div className="contact-item">
@@ -48,7 +48,7 @@ const Contact = () => {
             {/* Contact Message */}
             <div className="contact-message">
               <h3 className="message-title">
-                Get in Touch with MediMarc Trading
+                Get in Touch with Medimarc Trading
               </h3>
               <p className="message-description">
                 For inquiries, product details, or partnership opportunities,
@@ -56,7 +56,7 @@ const Contact = () => {
                 for prompt assistance from our team. We're here to support your
                 healthcare supply needs and answer any questions about our
                 products and services. Connect with us today to explore how
-                MediMarc Trading can help you!
+                Medimarc Trading can help you!
               </p>
             </div>
           </div>

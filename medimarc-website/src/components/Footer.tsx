@@ -12,8 +12,9 @@ const Footer = () => {
             </h3>
             <p className="footer-description">
               Delivering essential healthcare supplies to our valued customers
-              since 2020.
+              since 2020. Give us a call or an email.
             </p>
+            <h3 className="footer-title">Follow Us</h3>
             <div className="social-links">
               <a
                 href="https://www.facebook.com/medimarctrading"
