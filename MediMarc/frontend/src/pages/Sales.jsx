@@ -42,6 +42,7 @@ const Sales = () => {
   // States for Add Sale Modal
   const [isAddSaleOpen, setIsAddSaleOpen] = useState(false);
   const [newSale, setNewSale] = useState({
+    invoiceNumber: "",
     itemCode: "",
     productName: "",
     productId: "",
@@ -278,6 +279,7 @@ const Sales = () => {
 
     // ✅ Fix: Send "product" key instead of "product_id"
     const salePayload = {
+      invoice_number: newSale.invoiceNumber,
       customer: parseInt(customerObj.id, 10),
       product: parseInt(productObj.product_id, 10), // ✅ Ensure it's named "product"
       quantity: parseInt(newSale.quantity, 10),
@@ -530,7 +532,10 @@ const Sales = () => {
                       .sort((a, b) => b.id - a.id)
                       .map((sale, index) => (
                         <tr key={`${sale.id}-${index}`}>
-                          <td>{String(sale.id).padStart(4, "0")}</td>
+                          <td>
+                            {sale.invoice_number ||
+                              String(sale.id).padStart(4, "0")}
+                          </td>
                           <td>{sale.date}</td>
                           <td>{sale.product_id}</td>
                           <td>{sale.item_code}</td>
@@ -674,6 +679,14 @@ const Sales = () => {
             >
               <h2>Add Sale</h2>
               <form>
+                <input
+                  type="text"
+                  placeholder="Enter Sales Invoice No."
+                  value={newSale.invoiceNumber}
+                  onChange={(e) =>
+                    setNewSale({ ...newSale, invoiceNumber: e.target.value })
+                  }
+                />
                 <input
                   type="date"
                   value={newSale.date}

@@ -65,7 +65,7 @@ class Sale(models.Model):
         ("Cancelled", "Cancelled"),
         ("Delivered", "Delivered"),
     ]
-
+    invoice_number = models.CharField(max_length=100, null=True, blank=True)  
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="sales")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="sales")
     quantity = models.PositiveIntegerField()

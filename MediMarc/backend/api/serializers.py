@@ -64,7 +64,7 @@ class SaleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sale
-        fields = ["id", "customer", "customer_name", "product", "product_id", "product_name",
+        fields = ["invoice_number","id", "customer", "customer_name", "product", "product_id", "product_name",
                   "item_code", "lot_number", "expiration_date", "quantity", "selling_price", "total", "date", "status"]
 
 class SaleViewSet(ModelViewSet):
