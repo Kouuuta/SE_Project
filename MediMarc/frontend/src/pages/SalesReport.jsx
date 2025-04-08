@@ -162,7 +162,6 @@ const SalesReport = () => {
       <div className="sales-report-content">
         <div className="sales-report-form">
           <h2>Sales Report</h2>
-
           <label>Date Range</label>
           <div className="date-range">
             <input
@@ -191,6 +190,7 @@ const SalesReport = () => {
               onChange={setCustomer}
               placeholder="Select Customer"
               classNamePrefix="react-select"
+              isDisabled={!dateRange.start}
             />
           </div>
 
@@ -199,7 +199,7 @@ const SalesReport = () => {
             <Select
               options={itemOptions}
               value={itemCode}
-              disabled={!customer}
+              isDisabled={!customer || !dateRange.start}
               onChange={setItemCode}
               placeholder="Select Item Code"
               classNamePrefix="react-select"
@@ -209,12 +209,18 @@ const SalesReport = () => {
           <div className="report-buttons">
             <button
               className="pdf-btn"
+              disabled={
+                !dateRange.start || !dateRange.end || !customer || !itemCode
+              }
               onClick={() => handleGenerateReport("pdf")}
             >
               Generate PDF REPORT
             </button>
             <button
               className="csv-btn"
+              disabled={
+                !dateRange.start || !dateRange.end || !customer || !itemCode
+              }
               onClick={() => handleGenerateReport("csv")}
             >
               Generate CSV REPORT

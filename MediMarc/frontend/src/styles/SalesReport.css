@@ -123,3 +123,26 @@
     width: 95%;
   }
 }
+
+/* Disabled react-select style */
+.custom-react-select .react-select__control--is-disabled {
+  background-color: #f0f0f0 !important;
+  cursor: not-allowed !important;
+  color: #a0a0a0 !important;
+}
+
+.custom-react-select .react-select__single-value {
+  color: #333; /* normal text */
+}
+
+.custom-react-select .react-select__control--is-disabled .react-select__single-value,
+.custom-react-select .react-select__control--is-disabled .react-select__placeholder {
+  color: #a0a0a0 !important;
+}
+
+/* Disabled button style */
+button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+  color: #a0a0a0 !important;
+}

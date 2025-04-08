@@ -703,7 +703,7 @@ const Sales = () => {
 
                     setNewSale({
                       ...newSale,
-                      productId: selectedProduct?.product_id || "", // ✅ Make sure productId is set
+                      productId: selectedProduct?.product_id || "",
                       itemCode: selectedProduct?.item_code || "",
                       productName: selectedProduct?.product_name || "",
                       sellingPrice: selectedProduct?.selling_price || "",
@@ -717,6 +717,7 @@ const Sales = () => {
                   type="text"
                   placeholder="Enter Product Name"
                   value={newSale.productName}
+                  readOnly
                   onChange={(e) =>
                     setNewSale({ ...newSale, productName: e.target.value })
                   }
