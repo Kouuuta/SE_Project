@@ -30,7 +30,10 @@ const CustomerManagement = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setCustomers(response.data);
+        const sortedCustomers = response.data.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+        setCustomers(sortedCustomers);
       } catch (error) {
         console.error(
           "Error fetching customers:",
@@ -38,6 +41,7 @@ const CustomerManagement = () => {
         );
       }
     };
+
     fetchCustomers();
   }, []);
 

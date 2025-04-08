@@ -24,6 +24,7 @@ const HomePage = () => {
   const [recentProducts, setRecentProducts] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [rangeData, setRangeData] = useState([]);
+  const [selectedRange, setSelectedRange] = useState("30");
 
   useEffect(() => {
     const fetchSalesData = async () => {
@@ -33,7 +34,7 @@ const HomePage = () => {
 
         const response = await axios.post(
           "http://localhost:8000/api/sales/total/", // Ensure this endpoint returns expected data
-          { days: "30" },
+          { days: selectedRange },
           { headers }
         );
 
@@ -55,7 +56,7 @@ const HomePage = () => {
     };
 
     fetchSalesData();
-  }, []);
+  }, [selectedRange]);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -249,9 +250,32 @@ const HomePage = () => {
           </table>
         </div>
       </div>
+
       <div className="dashboard-chart">
+        <div className="chart-filters">
+          <button
+            onClick={() => setSelectedRange("7")}
+            className={selectedRange === "7" ? "active" : ""}
+          >
+            This Week
+          </button>
+          <button
+            onClick={() => setSelectedRange("30")}
+            className={selectedRange === "30" ? "active" : ""}
+          >
+            This Month
+          </button>
+          <button
+            onClick={() => setSelectedRange("365")}
+            className={selectedRange === "365" ? "active" : ""}
+          >
+            This Year
+          </button>
+        </div>
+
         <h3>Sales Chart</h3>
-        <ResponsiveContainer width="100%" height={300}>
+
+        <ResponsiveContainer width="100%" height={290}>
           <BarChart
             data={rangeData}
             margin={{ top: 20, right: 30, left: 20, bottom: 5 }}

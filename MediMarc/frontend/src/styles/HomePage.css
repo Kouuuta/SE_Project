@@ -209,3 +209,23 @@
     padding: 5px;
   }
 }
+
+.chart-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.chart-filters button {
+  padding: 6px 12px;
+  border: none;
+  background-color: #eee;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.chart-filters button.active {
+  background-color: #3498db;
+  color: white;
+}
+

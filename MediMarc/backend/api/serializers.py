@@ -6,6 +6,8 @@ from rest_framework.viewsets import ModelViewSet
 from .models import Product, Category, Customer, Sale, CustomUser
 from rest_framework import viewsets
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.utils import timezone
+from datetime import datetime
 
 class UserSerializer(serializers.ModelSerializer):
     user_type_display = serializers.SerializerMethodField()  
@@ -33,11 +35,11 @@ class LoginSerializer(TokenObtainPairSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category', read_only=True)  # ✅ Ensures correct display
+    product_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Product
-        fields = ['product_id', 'item_code', 'product_name', 'category', 'buying_price', 'selling_price', 'stock', 'category_name', 'lot_number', 'expiration_date']
-
+        fields = '__all__'
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

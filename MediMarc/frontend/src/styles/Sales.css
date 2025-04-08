@@ -47,6 +47,14 @@
 }
 
 /* Sales Table */
+.scrollable-sales-table {
+    max-height: 750px; /* You can adjust this height as needed */
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  
 .sales-page .sales-details {
     margin-top: 20px;
 }

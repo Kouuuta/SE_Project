@@ -708,17 +708,17 @@ def add_sale(request):
         return Response({"error": "Product not found"}, status=status.HTTP_400_BAD_REQUEST)
 
     sale_data = request.data.copy()
-    sale_data["product"] = product.id  # Ensure it's an actual object ID
+    sale_data["product"] = product.product_id  # ✅ FIXED HERE
 
     serializer = SaleSerializer(data=sale_data)
     if serializer.is_valid():
         sale = serializer.save()
         print("✅ Sale Created:", sale)
-
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     print("❌ Sale Validation Errors:", serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(["PUT"])

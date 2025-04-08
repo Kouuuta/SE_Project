@@ -506,95 +506,98 @@ const Sales = () => {
                   Add Sales
                 </button>
               </div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>SI No.</th>
-                    <th>Date Invoice</th>
-                    <th>Product ID</th>
-                    <th>Item Code</th>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Total</th>
-                    <th>Lot Number</th>
-                    <th>Expiration Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sales && sales.length > 0 ? (
-                    sales
-                      .filter(
-                        (sale) =>
-                          sale.customer === parseInt(selectedCustomer, 10)
-                      )
-                      .sort((a, b) => b.id - a.id)
-                      .map((sale, index) => (
-                        <tr key={`${sale.id}-${index}`}>
-                          <td>
-                            {sale.invoice_number ||
-                              String(sale.id).padStart(4, "0")}
-                          </td>
-                          <td>{sale.date}</td>
-                          <td>{sale.product_id}</td>
-                          <td>{sale.item_code}</td>
-                          <td>{sale.product_name}</td>
-                          <td>{sale.quantity}</td>
-                          <td>₱{sale.total}</td>
-                          <td>{sale.lot_number}</td>
-                          <td>{sale.expiration_date}</td>
-                          <td>
-                            <select
-                              className="sales-status-dropdown"
-                              value={sale.status}
-                              onChange={(e) =>
-                                handleStatusChange(sale.id, e.target.value)
-                              }
-                              disabled={sale.status === "Delivered"}
-                            >
-                              <option value="Pending">Pending</option>
-                              <option value="Cancelled">Cancelled</option>
-                              <option value="Delivered">Delivered</option>
-                            </select>
-                          </td>
-                          <td>
-                            <button
-                              className="sales-action-btn"
-                              onClick={() => openEditSale(sale)}
-                              disabled={sale.status === "Delivered"}
-                              title={
-                                sale.status === "Delivered"
-                                  ? "Cannot edit a delivered sale"
-                                  : ""
-                              }
-                              style={{
-                                color: "green",
-                                cursor:
-                                  sale.status === "Delivered"
-                                    ? "not-allowed"
-                                    : "pointer",
-                                opacity: sale.status === "Delivered" ? 0.5 : 1,
-                              }}
-                            >
-                              ✏
-                            </button>
-                            <button
-                              className="sales-action-btn"
-                              onClick={() => handleDeleteSale(sale.id)}
-                            >
-                              🗑
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                  ) : (
+              <div className="scrollable-sales-table ">
+                <table>
+                  <thead>
                     <tr>
-                      <td colSpan="10">No sales data available.</td>
+                      <th>SI No.</th>
+                      <th>Date Invoice</th>
+                      <th>Product ID</th>
+                      <th>Item Code</th>
+                      <th>Product Name</th>
+                      <th>Quantity</th>
+                      <th>Total</th>
+                      <th>Lot Number</th>
+                      <th>Expiration Date</th>
+                      <th>Status</th>
+                      <th>Actions</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {sales && sales.length > 0 ? (
+                      sales
+                        .filter(
+                          (sale) =>
+                            sale.customer === parseInt(selectedCustomer, 10)
+                        )
+                        .sort((a, b) => b.id - a.id)
+                        .map((sale, index) => (
+                          <tr key={`${sale.id}-${index}`}>
+                            <td>
+                              {sale.invoice_number ||
+                                String(sale.id).padStart(4, "0")}
+                            </td>
+                            <td>{sale.date}</td>
+                            <td>{sale.product_id}</td>
+                            <td>{sale.item_code}</td>
+                            <td>{sale.product_name}</td>
+                            <td>{sale.quantity}</td>
+                            <td>₱{sale.total}</td>
+                            <td>{sale.lot_number}</td>
+                            <td>{sale.expiration_date}</td>
+                            <td>
+                              <select
+                                className="sales-status-dropdown"
+                                value={sale.status}
+                                onChange={(e) =>
+                                  handleStatusChange(sale.id, e.target.value)
+                                }
+                                disabled={sale.status === "Delivered"}
+                              >
+                                <option value="Pending">Pending</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Delivered">Delivered</option>
+                              </select>
+                            </td>
+                            <td>
+                              <button
+                                className="sales-action-btn"
+                                onClick={() => openEditSale(sale)}
+                                disabled={sale.status === "Delivered"}
+                                title={
+                                  sale.status === "Delivered"
+                                    ? "Cannot edit a delivered sale"
+                                    : ""
+                                }
+                                style={{
+                                  color: "green",
+                                  cursor:
+                                    sale.status === "Delivered"
+                                      ? "not-allowed"
+                                      : "pointer",
+                                  opacity:
+                                    sale.status === "Delivered" ? 0.5 : 1,
+                                }}
+                              >
+                                ✏
+                              </button>
+                              <button
+                                className="sales-action-btn"
+                                onClick={() => handleDeleteSale(sale.id)}
+                              >
+                                🗑
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan="10">No sales data available.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </main>

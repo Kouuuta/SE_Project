@@ -24,7 +24,6 @@ const ProductManagement = () => {
 
   const [newProduct, setNewProduct] = useState({
     itemCode: "",
-    productId: "",
     productName: "",
     categories: "",
     inStock: "",
@@ -209,7 +208,6 @@ const ProductManagement = () => {
       const response = await axios.post(
         "http://localhost:8000/api/products/add/",
         {
-          product_id: newProduct.productId || `P${Date.now()}`,
           item_code: newProduct.itemCode,
           product_name: newProduct.productName,
           category: newProduct.category,
@@ -421,63 +419,67 @@ const ProductManagement = () => {
               Add Product
             </button>
           </div>
-          <table className="product-table">
-            <thead>
-              <tr>
-                <th>Product ID</th>
-                <th>Item Code</th>
-                <th>Product Name</th>
-                <th>Categories</th>
-                <th>Stock</th>
-                <th>Selling Price</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...products]
-                .sort((a, b) => b.product_id.localeCompare(a.product_id))
-                .map((product) => (
-                  <tr key={product.id || product.item_code || Math.random()}>
-                    <td>{product.product_id}</td>
-                    <td
-                      style={{
-                        color: "red",
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                        fontFamily: "sans-serif",
-                      }}
-                      onClick={() => handleItemCodeClick(product.product_id)}
-                    >
-                      {product.item_code}
-                    </td>
-                    <td>{product.product_name || "N/A"}</td>
-                    <td>
-                      {product.category ? product.category : "Uncategorized"}
-                    </td>
-                    <td>{product.stock !== null ? product.stock : 0}</td>
-                    <td>
-                      {product.selling_price
-                        ? `₱${product.selling_price.toLocaleString()}`
-                        : "N/A"}
-                    </td>
-                    <td>
-                      <button
-                        className="product-management-page edit-btn"
-                        onClick={() => openEditProduct(product)}
+          <div className="product-table-container">
+            <table className="product-table">
+              <thead>
+                <tr>
+                  <th>Product ID</th>
+                  <th>Item Code</th>
+                  <th>Product Name</th>
+                  <th>Categories</th>
+                  <th>Stock</th>
+                  <th>Selling Price</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...products]
+                  .sort((a, b) => b.product_id - a.product_id)
+                  .map((product) => (
+                    <tr key={product.id || product.item_code || Math.random()}>
+                      <td>{product.product_id}</td>
+                      <td
+                        style={{
+                          color: "red",
+                          cursor: "pointer",
+                          fontWeight: "bold",
+                          fontFamily: "sans-serif",
+                        }}
+                        onClick={() => handleItemCodeClick(product.product_id)}
                       >
-                        ✏
-                      </button>
-                      <button
-                        className="product-management-page delete-btn"
-                        onClick={() => handleDeleteProduct(product.product_id)}
-                      >
-                        🗑
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+                        {product.item_code}
+                      </td>
+                      <td>{product.product_name || "N/A"}</td>
+                      <td>
+                        {product.category ? product.category : "Uncategorized"}
+                      </td>
+                      <td>{product.stock !== null ? product.stock : 0}</td>
+                      <td>
+                        {product.selling_price
+                          ? `₱${product.selling_price.toLocaleString()}`
+                          : "N/A"}
+                      </td>
+                      <td>
+                        <button
+                          className="product-management-page edit-btn"
+                          onClick={() => openEditProduct(product)}
+                        >
+                          ✏
+                        </button>
+                        <button
+                          className="product-management-page delete-btn"
+                          onClick={() =>
+                            handleDeleteProduct(product.product_id)
+                          }
+                        >
+                          🗑
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
       {isProductDetailsOpen && selectedProduct && (
@@ -519,19 +521,32 @@ const ProductManagement = () => {
             <form>
               <input
                 type="text"
-                placeholder="Enter Product ID"
-                value={newProduct.productId}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, productId: e.target.value })
-                }
-              />
-              <input
-                type="text"
                 placeholder="Enter Item Code"
                 value={newProduct.itemCode}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, itemCode: e.target.value })
-                }
+                onChange={(e) => {
+                  const inputCode = e.target.value.toUpperCase();
+                  const matchedProduct = products.find(
+                    (product) => product.item_code.toUpperCase() === inputCode
+                  );
+
+                  if (matchedProduct) {
+                    setNewProduct({
+                      ...newProduct,
+                      itemCode: inputCode,
+                      productName: matchedProduct.product_name,
+                      category: matchedProduct.category,
+                      sellingPrice: matchedProduct.selling_price,
+                    });
+                  } else {
+                    setNewProduct({
+                      ...newProduct,
+                      itemCode: inputCode,
+                      productName: "",
+                      category: "",
+                      sellingPrice: "",
+                    });
+                  }
+                }}
               />
               <input
                 type="text"
