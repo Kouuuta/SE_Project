@@ -52,6 +52,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 class SaleSerializer(serializers.ModelSerializer):
     status = serializers.CharField(required=True)  
+    date = serializers.DateField() 
     customer_name = serializers.CharField(source="customer.name", read_only=True)
     product_id = serializers.IntegerField(source="product.product_id", read_only=True) 
     product_name = serializers.CharField(source="product.product_name", read_only=True)

@@ -281,7 +281,7 @@ const Sales = () => {
     const salePayload = {
       invoice_number: newSale.invoiceNumber,
       customer: parseInt(customerObj.id, 10),
-      product: parseInt(productObj.product_id, 10), // ✅ Ensure it's named "product"
+      product: parseInt(productObj.product_id, 10),
       quantity: parseInt(newSale.quantity, 10),
       total: parseFloat(newSale.total),
       date: newSale.date,
@@ -609,11 +609,10 @@ const Sales = () => {
               <form>
                 <input
                   type="date"
-                  value={newSale.date}
+                  value={editSale.date}
                   onChange={(e) =>
-                    setNewSale({ ...newSale, date: e.target.value })
+                    setEditSale({ ...editSale, date: e.target.value })
                   }
-                  min={new Date().toISOString().split("T")[0]} // Prevent past dates
                 />
                 <input
                   type="text"
@@ -693,7 +692,6 @@ const Sales = () => {
                   onChange={(e) =>
                     setNewSale({ ...newSale, date: e.target.value })
                   }
-                  min={new Date().toISOString().split("T")[0]} // Prevent past dates
                 />
                 <Select
                   options={products.map((product) => ({

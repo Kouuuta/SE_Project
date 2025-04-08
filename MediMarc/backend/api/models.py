@@ -70,7 +70,7 @@ class Sale(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="sales")
     quantity = models.PositiveIntegerField()
     total = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
 
     def __str__(self):
