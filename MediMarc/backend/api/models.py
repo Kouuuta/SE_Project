@@ -24,7 +24,7 @@ class CustomUser(AbstractUser):
 
 
 class Product(models.Model):
-    product_id = models.AutoField(primary_key=True)  # 🔥 This becomes the auto-incrementing ID
+    product_id = models.AutoField(primary_key=True)  
     item_code = models.CharField(max_length=100)
     product_name = models.CharField(max_length=255)
     category = models.CharField(max_length=255)
@@ -34,6 +34,7 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     lot_number = models.CharField(max_length=100, blank=True, null=True)
     expiration_date = models.DateField(blank=True, null=True)
+    shipment_date = models.DateField(blank=True, null=True) 
 
     def __str__(self):
         return self.product_name

@@ -36,6 +36,7 @@ class LoginSerializer(TokenObtainPairSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category', read_only=True)  # ✅ Ensures correct display
     product_id = serializers.IntegerField(read_only=True)
+    shipment_date = serializers.DateField(required=False)
 
     class Meta:
         model = Product

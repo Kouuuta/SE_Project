@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/Categories.css";
 import { toast } from "sonner";
-import Sidebar from "../components/Sidebar";
 
 const Categories = () => {
   const navigate = useNavigate();
@@ -11,6 +10,9 @@ const Categories = () => {
   const [newCategory, setNewCategory] = useState("");
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [editCategory, setEditCategory] = useState({ id: null, name: "" });
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+  const loggedInUserType = loggedInUser.user_type_display;
+  console.log(loggedInUserType);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -122,18 +124,22 @@ const Categories = () => {
     <div className="categories-page ">
       <main className="dashboard-content">
         <div className="category-container">
-          <div className="add-category">
-            <h2>Add Category</h2>
-            <input
-              type="text"
-              placeholder="Enter Category Name"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-            />
-            <button className="confirm-btn" onClick={handleAddCategory}>
-              Confirm
-            </button>
-          </div>
+          {loggedInUserType &&
+            (loggedInUserType === "SUPER ADMIN" ||
+              loggedInUserType === "Admin") && (
+              <div className="add-category">
+                <h2>Add Category</h2>
+                <input
+                  type="text"
+                  placeholder="Enter Category Name"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                />
+                <button className="confirm-btn" onClick={handleAddCategory}>
+                  Confirm
+                </button>
+              </div>
+            )}
           <div className="category-list">
             <h2>Categories</h2>
             <table>
@@ -141,7 +147,7 @@ const Categories = () => {
                 <tr>
                   <th>No.</th>
                   <th>Category</th>
-                  <th>Actions</th>
+                  {loggedInUserType === "SUPER ADMIN" && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody className="category-list">
@@ -149,24 +155,26 @@ const Categories = () => {
                   <tr key={category.id}>
                     <td>{index + 1}</td>
                     <td>{category.name}</td>
-                    <td>
-                      <button
-                        className="categories-action-btn"
-                        style={{ color: "green" }}
-                        onClick={() => {
-                          setEditCategory(category);
-                          setIsEditPopupOpen(true);
-                        }}
-                      >
-                        ✏
-                      </button>
-                      <button
-                        className="categories-action-btn"
-                        onClick={() => handleDeleteCategory(category.id)}
-                      >
-                        🗑
-                      </button>
-                    </td>
+                    {loggedInUserType === "SUPER ADMIN" && (
+                      <td>
+                        <button
+                          className="categories-action-btn"
+                          style={{ color: "green" }}
+                          onClick={() => {
+                            setEditCategory(category);
+                            setIsEditPopupOpen(true);
+                          }}
+                        >
+                          ✏
+                        </button>
+                        <button
+                          className="categories-action-btn"
+                          onClick={() => handleDeleteCategory(category.id)}
+                        >
+                          🗑
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

@@ -18,6 +18,11 @@ const Sales = () => {
   const [isEditSaleOpen, setIsEditSaleOpen] = useState(false);
   const [editSale, setEditSale] = useState(null);
 
+  const loggedInUserId = localStorage.getItem("userId") || "";
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+  const loggedInUserType = loggedInUser.user_type_display;
+  console.log(loggedInUserType);
+
   const [dailySales, setDailySales] = useState({
     results: [],
     current_page: 1,
@@ -396,6 +401,10 @@ const Sales = () => {
     }
   };
 
+  const formatNumber = (number) => {
+    return new Intl.NumberFormat().format(number);
+  };
+
   return (
     <div className="sales-page-management">
       <div className="sales-page">
@@ -501,10 +510,13 @@ const Sales = () => {
                   }
                   placeholder="Select Customer"
                 />
-
-                <button className="add-sale-btn" onClick={openAddSale}>
-                  Add Sales
-                </button>
+                {loggedInUserType &&
+                  (loggedInUserType === "SUPER ADMIN" ||
+                    loggedInUserType === "Admin") && (
+                    <button className="add-sale-btn" onClick={openAddSale}>
+                      Add Sales
+                    </button>
+                  )}
               </div>
               <div className="scrollable-sales-table ">
                 <table>
@@ -519,8 +531,8 @@ const Sales = () => {
                       <th>Total</th>
                       <th>Lot Number</th>
                       <th>Expiration Date</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                      {loggedInUserType === "SUPER ADMIN" && <th>Status</th>}
+                      {loggedInUserType === "SUPER ADMIN" && <th>Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -541,53 +553,57 @@ const Sales = () => {
                             <td>{sale.product_id}</td>
                             <td>{sale.item_code}</td>
                             <td>{sale.product_name}</td>
-                            <td>{sale.quantity}</td>
-                            <td>₱{sale.total}</td>
+                            <td>{formatNumber(sale.quantity)}</td>
+                            <td>₱{formatNumber(sale.total)}</td>
                             <td>{sale.lot_number}</td>
                             <td>{sale.expiration_date}</td>
-                            <td>
-                              <select
-                                className="sales-status-dropdown"
-                                value={sale.status}
-                                onChange={(e) =>
-                                  handleStatusChange(sale.id, e.target.value)
-                                }
-                                disabled={sale.status === "Delivered"}
-                              >
-                                <option value="Pending">Pending</option>
-                                <option value="Cancelled">Cancelled</option>
-                                <option value="Delivered">Delivered</option>
-                              </select>
-                            </td>
-                            <td>
-                              <button
-                                className="sales-action-btn"
-                                onClick={() => openEditSale(sale)}
-                                disabled={sale.status === "Delivered"}
-                                title={
-                                  sale.status === "Delivered"
-                                    ? "Cannot edit a delivered sale"
-                                    : ""
-                                }
-                                style={{
-                                  color: "green",
-                                  cursor:
+                            {loggedInUserType === "SUPER ADMIN" && (
+                              <td>
+                                <select
+                                  className="sales-status-dropdown"
+                                  value={sale.status}
+                                  onChange={(e) =>
+                                    handleStatusChange(sale.id, e.target.value)
+                                  }
+                                  disabled={sale.status === "Delivered"}
+                                >
+                                  <option value="Pending">Pending</option>
+                                  <option value="Cancelled">Cancelled</option>
+                                  <option value="Delivered">Delivered</option>
+                                </select>
+                              </td>
+                            )}
+                            {loggedInUserType === "SUPER ADMIN" && (
+                              <td>
+                                <button
+                                  className="sales-action-btn"
+                                  onClick={() => openEditSale(sale)}
+                                  disabled={sale.status === "Delivered"}
+                                  title={
                                     sale.status === "Delivered"
-                                      ? "not-allowed"
-                                      : "pointer",
-                                  opacity:
-                                    sale.status === "Delivered" ? 0.5 : 1,
-                                }}
-                              >
-                                ✏
-                              </button>
-                              <button
-                                className="sales-action-btn"
-                                onClick={() => handleDeleteSale(sale.id)}
-                              >
-                                🗑
-                              </button>
-                            </td>
+                                      ? "Cannot edit a delivered sale"
+                                      : ""
+                                  }
+                                  style={{
+                                    color: "green",
+                                    cursor:
+                                      sale.status === "Delivered"
+                                        ? "not-allowed"
+                                        : "pointer",
+                                    opacity:
+                                      sale.status === "Delivered" ? 0.5 : 1,
+                                  }}
+                                >
+                                  ✏
+                                </button>
+                                <button
+                                  className="sales-action-btn"
+                                  onClick={() => handleDeleteSale(sale.id)}
+                                >
+                                  🗑
+                                </button>
+                              </td>
+                            )}
                           </tr>
                         ))
                     ) : (

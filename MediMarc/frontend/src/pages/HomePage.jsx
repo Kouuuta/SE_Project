@@ -122,26 +122,18 @@ const HomePage = () => {
           "http://localhost:8000/api/sales/latest/",
           { headers }
         );
-        const recentRes = await axios
-          .get("http://localhost:8000/api/products/recent/", { headers })
-          .catch((error) => {
-            console.error(
-              "❌ Error fetching recent products:",
-              error.response?.data || error.message
-            );
-          });
-        const lowStockRes = await axios
-          .get("http://localhost:8000/api/products/low-stock/", { headers })
-          .catch((error) => {
-            console.error(
-              "❌ Error fetching low-stock products:",
-              error.response?.data || error.message
-            );
-          });
+        const recentRes = await axios.get(
+          "http://localhost:8000/api/products/recent/",
+          { headers }
+        );
+        const lowStockRes = await axios.get(
+          "http://localhost:8000/api/products/low-stock/",
+          { headers }
+        );
 
         setLatestSales(salesRes.data);
-        setRecentProducts(recentRes.data);
-        setLowStockProducts(lowStockRes.data);
+        setRecentProducts(recentRes.data); // Ensure this is correctly set
+        setLowStockProducts(lowStockRes.data); // Ensure low-stock data is correctly set
       } catch (error) {
         console.error(
           "❌ Error fetching dashboard data:",
@@ -152,6 +144,10 @@ const HomePage = () => {
 
     fetchDashboardData();
   }, []);
+
+  const formatNumber = (number) => {
+    return new Intl.NumberFormat().format(number);
+  };
 
   return (
     <main className="dashboard-content">
@@ -201,7 +197,7 @@ const HomePage = () => {
                   <td>{sale.product_id}</td>
                   <td>{sale.item_code}</td>
                   <td>{new Date(sale.date).toLocaleDateString()}</td>
-                  <td>₱{sale.total.toLocaleString()}</td>
+                  <td>₱{formatNumber(sale.total.toLocaleString())}</td>
                 </tr>
               ))}
             </tbody>

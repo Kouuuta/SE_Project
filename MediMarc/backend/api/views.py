@@ -413,6 +413,7 @@ def get_products(request):
             "stock": product["stock"] or 0,
             "lot_number": product["lot_number"] or "N/A",  # ✅ Ensure Lot Number is included
             "expiration_date": product["expiration_date"] or "N/A",  # ✅ Ensure Expiration Date is included
+            "shipment_date": product["shipment_date"] or "N/A", 
         }
         for index, product in enumerate(serializer.data)
     ]
@@ -482,7 +483,7 @@ def delete_product(request, product_id):
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_stock(request, product_id):
-    """Update stock for a product using product_id."""
+    """Update stock for a product using product_id, including shipment date."""
     try:
         product = Product.objects.get(product_id=product_id)
     except Product.DoesNotExist:
@@ -492,12 +493,28 @@ def update_stock(request, product_id):
 
     try:
         stock_to_add = int(request.data.get("stock", 0))
+        shipment_date = request.data.get("shipment_date", None)
+
         if stock_to_add < 0:
             return Response(
                 {"error": "Stock value cannot be negative"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Add new stock entry with a new shipment date
+        new_product_entry = Product.objects.create(
+            item_code=product.item_code,
+            product_name=product.product_name,
+            category=product.category,
+            buying_price=product.buying_price,
+            selling_price=product.selling_price,
+            stock=stock_to_add,
+            lot_number=product.lot_number,
+            expiration_date=product.expiration_date,
+            shipment_date=shipment_date  # Save the shipment date
+        )
+
+        # Update the product's stock
         product.stock += stock_to_add
         product.save()
 
@@ -511,6 +528,7 @@ def update_stock(request, product_id):
             {"error": "Invalid stock value. Must be an integer."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
 
 
 @api_view(["GET"])
@@ -577,17 +595,19 @@ def get_latest_sales(request):
 @permission_classes([IsAuthenticated])
 def get_recently_added_products(request):
     """Fetch the 5 most recently added products"""
-    recent_products = Product.objects.order_by("-id")[:5]
+    recent_products = Product.objects.order_by("-created_at")[:5]  # Query by `created_at` to get recent products
     serializer = ProductSerializer(recent_products, many=True)
     return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_low_stock_products(request):
-    """Fetch products with stock less than or equal to 5"""
+    """Fetch products with stock less than or equal to 100"""
     low_stock_products = Product.objects.filter(stock__lte=100)
     serializer = ProductSerializer(low_stock_products, many=True)
     return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
@@ -806,61 +826,66 @@ class SaleViewSet(ModelViewSet):
 
 class GenerateSalesReport(APIView):
     def get(self, request, *args, **kwargs):
-        sales = Sale.objects.all()
-        filtered_sales = SalesFilter(request.GET, queryset=sales).qs
-
-        item_code = request.GET.get("item_code", "").strip()
-        customer_name = request.GET.get("customer_name", "").strip()
-        if item_code:
-            filtered_sales = filtered_sales.filter(product__item_code=item_code)
-
-
-        if not filtered_sales.exists():
-            return Response({"message": "No sales found"}, status=404)
-
-        # Get filters from request
+        # Get the filters from the request
         start_date = request.GET.get("start_date", "N/A")
         end_date = request.GET.get("end_date", "N/A")
         customer_name = request.GET.get("customer_name", "")
-
         format_type = request.GET.get("format_type", "csv").lower()
 
-        if format_type == "csv":
-            return generate_csv_report(filtered_sales)
-        elif format_type == "pdf":
-            return generate_pdf_report(filtered_sales, start_date, end_date, customer_name)
+        # Get all sales, but filter to only include "Delivered" status sales
+        sales = Sale.objects.filter(status="Delivered")
 
+        # Apply date filtering
+        if start_date and end_date:
+            sales = sales.filter(date__gte=start_date, date__lte=end_date)
+
+        # Further filter by customer if provided
+        if customer_name:
+            sales = sales.filter(customer__name=customer_name)
+
+        # Check if there are sales after filtering
+        if not sales.exists():
+            return Response({"message": "No sales found"}, status=404)
+
+        # Handle different formats
+        if format_type == "csv":
+            return generate_csv_report(sales)
+        elif format_type == "pdf":
+            return generate_pdf_report(sales, start_date, end_date, customer_name)
+        
         return Response({"error": "Invalid format. Use 'pdf' or 'csv'."}, status=400)
 
 
+
 def generate_csv_report(sales):
-    """Generate CSV report with Lot Number & Expiration Date."""
+    """Generate CSV report with only 'Delivered' sales."""
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="sales_report.csv"'
 
     writer = csv.writer(response)
 
-    # ✅ Include new columns
+    # Add headers for the CSV file
     writer.writerow(["SI No.", "Date Invoice", "Item Code", "Customer", "Product Name", "Quantity", "Total Sale", "Lot Number", "Expiration Date"])
 
     for sale in sales:
         writer.writerow([
-            f"{sale.id:04}",
-            sale.date.strftime("%Y-%m-%d"), 
+            sale.invoice_number,
+            sale.date.strftime("%Y-%m-%d"),
             sale.product.item_code,
-            sale.customer.name, 
+            sale.customer.name,
             sale.product.product_name,
             sale.quantity,
             sale.total,
-            sale.product.lot_number,  
-            sale.product.expiration_date.strftime("%Y-%m-%d"),  
+            sale.product.lot_number,
+            sale.product.expiration_date.strftime("%Y-%m-%d"),
         ])
 
     return response
 
 
+
 def generate_pdf_report(sales, start_date, end_date, customer_name):
-    """Generate a formatted PDF Sales Report with SI No. from sale.id, Quantity, and Customer."""
+    """Generate a formatted PDF Sales Report with only 'Delivered' sales."""
     pdfmetrics.registerFont(TTFont("ArialUnicode", "arial.ttf"))
     buffer = BytesIO()
 
@@ -873,14 +898,14 @@ def generate_pdf_report(sales, start_date, end_date, customer_name):
     elements = []
     styles = getSampleStyleSheet()
 
-    # Styles
+    # Styles for title and headers
     title_style = ParagraphStyle(name="Title", fontSize=16, alignment=1, spaceAfter=10, fontName="Helvetica-Bold")
     header_style = ParagraphStyle(name="Header", fontSize=12, alignment=1, spaceAfter=5, fontName="Helvetica-Bold")
     body_style = ParagraphStyle(name="Normal", fontName="ArialUnicode", fontSize=8.5)
     right_align_style = ParagraphStyle(name="RightAlign", fontName="ArialUnicode", alignment=2, fontSize=8.5)
     total_style = ParagraphStyle(name="Total", fontName="ArialUnicode", alignment=2, textColor=colors.red, fontSize=9.5)
 
-    # Title/Header
+    # Title/Header for PDF
     title = Paragraph("MediMarc Trading Inventory - Sales Report", title_style)
     date_range = Paragraph(f"<b>{start_date} -TILL DATE- {end_date}</b>", header_style)
     customer_display = Paragraph(f"<b>{customer_name}</b>", header_style)
@@ -893,7 +918,7 @@ def generate_pdf_report(sales, start_date, end_date, customer_name):
 
     for sale in sales:
         table_data.append([
-            f"{sale.id:04}",
+            sale.invoice_number,
             sale.date.strftime("%Y-%m-%d"),
             sale.product.item_code,
             Paragraph(sale.customer.name, body_style),
@@ -927,8 +952,8 @@ def generate_pdf_report(sales, start_date, end_date, customer_name):
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("TEXTCOLOR", (6, -1), (6, -1), colors.red),
         ("FONTSIZE", (0, 1), (-1, -1), 8.5),
-        ("WORDWRAP", (3, 1), (3, -2), "CJK"),  
-        ("WORDWRAP", (4, 1), (4, -2), "CJK"),  
+        ("WORDWRAP", (3, 1), (3, -2), "CJK"),
+        ("WORDWRAP", (4, 1), (4, -2), "CJK"),
     ]))
 
     elements.append(table)
@@ -941,6 +966,7 @@ def generate_pdf_report(sales, start_date, end_date, customer_name):
     response = HttpResponse(pdf_data, content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="sales_report.pdf"'
     return response
+
 
 
 @api_view(["POST"])

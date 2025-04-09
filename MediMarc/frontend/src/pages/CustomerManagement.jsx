@@ -16,6 +16,10 @@ const CustomerManagement = () => {
     address: "",
   });
 
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+  const loggedInUserType = loggedInUser.user_type_display;
+  console.log(loggedInUserType);
+
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -173,29 +177,33 @@ const CustomerManagement = () => {
   return (
     <div className="customer-management-page">
       <main className="dashboard-content">
-        <div className="add-customer">
-          <h2>Add Customer</h2>
-          <input
-            type="text"
-            placeholder="Enter Customer Name"
-            value={newCustomer.name}
-            onChange={(e) =>
-              setNewCustomer({ ...newCustomer, name: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Enter Address Name"
-            value={newCustomer.address}
-            onChange={(e) =>
-              setNewCustomer({ ...newCustomer, address: e.target.value })
-            }
-          />
-          <button className="confirm-btn" onClick={handleAddCustomer}>
-            Confirm
-          </button>
-        </div>
+        {loggedInUserType &&
+          (loggedInUserType === "SUPER ADMIN" ||
+            loggedInUserType === "Admin") && (
+            <div className="add-customer">
+              <h2>Add Customer</h2>
 
+              <input
+                type="text"
+                placeholder="Enter Customer Name"
+                value={newCustomer.name}
+                onChange={(e) =>
+                  setNewCustomer({ ...newCustomer, name: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Enter Address Name"
+                value={newCustomer.address}
+                onChange={(e) =>
+                  setNewCustomer({ ...newCustomer, address: e.target.value })
+                }
+              />
+              <button className="confirm-btn" onClick={handleAddCustomer}>
+                Confirm
+              </button>
+            </div>
+          )}
         <div className="customer-list">
           <h2>Customers</h2>
           <table>
@@ -204,7 +212,7 @@ const CustomerManagement = () => {
                 <th>No.</th>
                 <th>Customers</th>
                 <th>Address</th>
-                <th>Actions</th>
+                {loggedInUserType === "SUPER ADMIN" && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -213,20 +221,22 @@ const CustomerManagement = () => {
                   <td>{index + 1}</td>
                   <td>{customer.name}</td>
                   <td>{customer.address}</td>
-                  <td>
-                    <button
-                      className="customer-management-page edit-btn"
-                      onClick={() => openEditPopup(customer)}
-                    >
-                      ✏
-                    </button>
-                    <button
-                      className="customer-management-page delete-btn"
-                      onClick={() => handleDeleteCustomer(customer.id)}
-                    >
-                      🗑
-                    </button>
-                  </td>
+                  {loggedInUserType === "SUPER ADMIN" && (
+                    <td>
+                      <button
+                        className="customer-management-page edit-btn"
+                        onClick={() => openEditPopup(customer)}
+                      >
+                        ✏
+                      </button>
+                      <button
+                        className="customer-management-page delete-btn"
+                        onClick={() => handleDeleteCustomer(customer.id)}
+                      >
+                        🗑
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

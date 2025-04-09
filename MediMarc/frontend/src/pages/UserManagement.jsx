@@ -31,8 +31,10 @@ const UserManagementPage = () => {
     userType: "USER",
   });
 
-  const loggedInUserType = localStorage.getItem("userType") || "";
   const loggedInUserId = localStorage.getItem("userId") || "";
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+  const loggedInUserType = loggedInUser.user_type_display;
+  console.log(loggedInUserType);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -292,14 +294,18 @@ const UserManagementPage = () => {
   return (
     <div className="user-management-container">
       <div className="user-management-content">
-        <div>
-          <button
-            className="user-management-add-btn"
-            onClick={() => setIsAddUserPopupOpen(true)}
-          >
-            Add User
-          </button>
-        </div>
+        {loggedInUserType &&
+          (loggedInUserType === "SUPER ADMIN" ||
+            loggedInUserType === "Admin") && (
+            <div>
+              <button
+                className="user-management-add-btn"
+                onClick={() => setIsAddUserPopupOpen(true)}
+              >
+                Add User
+              </button>
+            </div>
+          )}
 
         <table className="user-management-table">
           <thead>
@@ -308,7 +314,7 @@ const UserManagementPage = () => {
               <th>Username</th>
               <th>Email</th>
               <th>Role</th>
-              <th>Actions</th>
+              {loggedInUserType === "SUPER ADMIN" && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -328,58 +334,59 @@ const UserManagementPage = () => {
                     <td style={{ color: isAdmin ? "red" : "green" }}>
                       {user.user_type_display}
                     </td>
+                    {loggedInUserType === "SUPER ADMIN" && (
+                      <td style={{ width: 300 }}>
+                        {/* ✏ Edit Button */}
+                        <button
+                          className="user-management-action-btn edit"
+                          onClick={() => openEditPopup(user)}
+                          disabled={
+                            (!isCurrentUser && loggedInUserType === "USER") ||
+                            (isLoggedInAdmin && isAdmin && !isCurrentUser)
+                          }
+                          style={{
+                            cursor:
+                              (!isCurrentUser && loggedInUserType === "USER") ||
+                              (isLoggedInAdmin && isAdmin && !isCurrentUser)
+                                ? "not-allowed"
+                                : "pointer",
+                            opacity:
+                              (!isCurrentUser && loggedInUserType === "USER") ||
+                              (isLoggedInAdmin && isAdmin && !isCurrentUser)
+                                ? 0.5
+                                : 1,
+                          }}
+                        >
+                          ✏
+                        </button>
 
-                    <td style={{ width: 300 }}>
-                      {/* ✏ Edit Button */}
-                      <button
-                        className="user-management-action-btn edit"
-                        onClick={() => openEditPopup(user)}
-                        disabled={
-                          (!isCurrentUser && loggedInUserType === "USER") ||
-                          (isLoggedInAdmin && isAdmin && !isCurrentUser)
-                        }
-                        style={{
-                          cursor:
+                        {/* 🗑 Delete Button */}
+                        <button
+                          className="user-management-action-btn delete"
+                          onClick={() =>
+                            handleDeleteUser(user.id, user.user_type)
+                          }
+                          disabled={
                             (!isCurrentUser && loggedInUserType === "USER") ||
                             (isLoggedInAdmin && isAdmin && !isCurrentUser)
-                              ? "not-allowed"
-                              : "pointer",
-                          opacity:
-                            (!isCurrentUser && loggedInUserType === "USER") ||
-                            (isLoggedInAdmin && isAdmin && !isCurrentUser)
-                              ? 0.5
-                              : 1,
-                        }}
-                      >
-                        ✏
-                      </button>
-
-                      {/* 🗑 Delete Button */}
-                      <button
-                        className="user-management-action-btn delete"
-                        onClick={() =>
-                          handleDeleteUser(user.id, user.user_type)
-                        }
-                        disabled={
-                          (!isCurrentUser && loggedInUserType === "USER") ||
-                          (isLoggedInAdmin && isAdmin && !isCurrentUser)
-                        }
-                        style={{
-                          cursor:
-                            (!isCurrentUser && loggedInUserType === "USER") ||
-                            (isLoggedInAdmin && isAdmin && !isCurrentUser)
-                              ? "not-allowed"
-                              : "pointer",
-                          opacity:
-                            (!isCurrentUser && loggedInUserType === "USER") ||
-                            (isLoggedInAdmin && isAdmin && !isCurrentUser)
-                              ? 0.5
-                              : 1,
-                        }}
-                      >
-                        🗑
-                      </button>
-                    </td>
+                          }
+                          style={{
+                            cursor:
+                              (!isCurrentUser && loggedInUserType === "USER") ||
+                              (isLoggedInAdmin && isAdmin && !isCurrentUser)
+                                ? "not-allowed"
+                                : "pointer",
+                            opacity:
+                              (!isCurrentUser && loggedInUserType === "USER") ||
+                              (isLoggedInAdmin && isAdmin && !isCurrentUser)
+                                ? 0.5
+                                : 1,
+                          }}
+                        >
+                          🗑
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })

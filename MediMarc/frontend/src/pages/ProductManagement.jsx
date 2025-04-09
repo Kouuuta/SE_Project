@@ -6,7 +6,6 @@ import "../pages/Categories";
 import Select from "react-select";
 import { toast } from "sonner";
 import { confirmDialog } from "primereact/confirmdialog";
-import Sidebar from "../components/Sidebar";
 
 const ProductManagement = () => {
   const navigate = useNavigate();
@@ -21,6 +20,10 @@ const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [totalStock, setTotalStock] = useState(0);
+
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+  const loggedInUserType = loggedInUser.user_type_display;
+  console.log(loggedInUserType);
 
   const [newProduct, setNewProduct] = useState({
     itemCode: "",
@@ -48,9 +51,7 @@ const ProductManagement = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        console.log("📌 Updated Products:", response.data);
-        setProducts(response.data);
+        setProducts(response.data); // This should include shipment_date
       } catch (error) {
         console.error(
           "Error fetching products:",
@@ -197,7 +198,8 @@ const ProductManagement = () => {
     if (
       !newProduct.itemCode ||
       !newProduct.productName ||
-      !newProduct.sellingPrice
+      !newProduct.sellingPrice ||
+      !newProduct.shipmentDate
     ) {
       toast.warning("All required fields must be filled.", { duration: 2000 });
       return;
@@ -216,6 +218,7 @@ const ProductManagement = () => {
           stock: newProduct.inStock || 0,
           lot_number: newProduct.lotNumber,
           expiration_date: newProduct.expirationDate,
+          shipment_date: newProduct.shipmentDate,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -235,6 +238,7 @@ const ProductManagement = () => {
         inStock: "",
         lotNumber: "",
         expirationDate: "",
+        shipmentDate: "",
       });
 
       closeAddProduct();
@@ -301,8 +305,14 @@ const ProductManagement = () => {
   };
 
   const handleAddStock = async () => {
-    if (!stockDetails.productId || !stockDetails.stock) {
-      toast.error("Please select a product and enter stock quantity.");
+    if (
+      !stockDetails.productId ||
+      !stockDetails.stock ||
+      !stockDetails.shipmentDate
+    ) {
+      toast.error(
+        "Please select a product, enter stock quantity, and shipment date."
+      );
       return;
     }
 
@@ -310,25 +320,31 @@ const ProductManagement = () => {
       const token = localStorage.getItem("access_token");
 
       const response = await axios.put(
-        `http://localhost:8000/api/products/${encodeURIComponent(
-          stockDetails.productId
-        )}/update-stock/`,
-        { stock: parseInt(stockDetails.stock, 10) },
+        `http://localhost:8000/api/products/${encodeURIComponent(stockDetails.productId)}/update-stock/`,
+        {
+          stock: parseInt(stockDetails.stock, 10),
+          shipment_date: stockDetails.shipmentDate, // Send the shipment date with stock update
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       toast.success(`${response.data.message}`, { duration: 2000 });
 
+      // Update the product list with new stock and shipment date
       setProducts((prevProducts) =>
         prevProducts.map((product) =>
           product.product_id === stockDetails.productId
-            ? { ...product, stock: response.data.new_stock }
+            ? {
+                ...product,
+                stock: response.data.new_stock,
+                shipment_date: stockDetails.shipmentDate,
+              }
             : product
         )
       );
 
-      setStockDetails({ productId: "", stock: "" });
-      closeAddStock();
+      setStockDetails({ productId: "", stock: "", shipmentDate: "" }); // Reset the stock details and shipment date
+      closeAddStock(); // Close the Add Stock modal
     } catch (error) {
       console.error(
         "Error updating stock:",
@@ -361,6 +377,19 @@ const ProductManagement = () => {
       console.error("Error fetching product details:", error);
       toast.error("Failed to load product details.");
     }
+  };
+
+  const uniqueProducts = [
+    ...new Map(
+      products.map((product) => [
+        product.item_code + product.lot_number,
+        product,
+      ])
+    ).values(),
+  ];
+
+  const formatNumber = (number) => {
+    return new Intl.NumberFormat().format(number);
   };
 
   return (
@@ -401,35 +430,43 @@ const ProductManagement = () => {
                   color: "red",
                 }}
               >
-                {totalStock} Stocks
+                {formatNumber(totalStock)} Stocks
               </p>
             </h3>
           </div>
         </div>
         <div className="product-container">
-          <div className="product-actions">
-            <button className="action-btn add-stock-btn" onClick={openAddStock}>
-              Add Stock
-            </button>
+          {loggedInUserType &&
+            (loggedInUserType === "SUPER ADMIN" ||
+              loggedInUserType === "Admin") && (
+              <div className="product-actions">
+                <button
+                  className="action-btn add-stock-btn"
+                  onClick={openAddStock}
+                >
+                  Add Stock
+                </button>
 
-            <button
-              className="action-btn add-product-btn"
-              onClick={openAddProduct}
-            >
-              Add Product
-            </button>
-          </div>
+                <button
+                  className="action-btn add-product-btn"
+                  onClick={openAddProduct}
+                >
+                  Add Product
+                </button>
+              </div>
+            )}
           <div className="product-table-container">
             <table className="product-table">
               <thead>
                 <tr>
                   <th>Product ID</th>
+                  <th>Shipment Date</th>
                   <th>Item Code</th>
                   <th>Product Name</th>
                   <th>Categories</th>
                   <th>Stock</th>
                   <th>Selling Price</th>
-                  <th>Actions</th>
+                  {loggedInUserType === "SUPER ADMIN" && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -438,6 +475,11 @@ const ProductManagement = () => {
                   .map((product) => (
                     <tr key={product.id || product.item_code || Math.random()}>
                       <td>{product.product_id}</td>
+                      <td>
+                        {product.shipment_date
+                          ? new Date(product.shipment_date).toLocaleDateString()
+                          : "N/A"}
+                      </td>
                       <td
                         style={{
                           color: "red",
@@ -453,28 +495,34 @@ const ProductManagement = () => {
                       <td>
                         {product.category ? product.category : "Uncategorized"}
                       </td>
-                      <td>{product.stock !== null ? product.stock : 0}</td>
+                      <td>
+                        {formatNumber(
+                          product.stock !== null ? product.stock : 0
+                        )}
+                      </td>
                       <td>
                         {product.selling_price
-                          ? `₱${product.selling_price.toLocaleString()}`
+                          ? `₱${formatNumber(product.selling_price)}`
                           : "N/A"}
                       </td>
-                      <td>
-                        <button
-                          className="product-management-page edit-btn"
-                          onClick={() => openEditProduct(product)}
-                        >
-                          ✏
-                        </button>
-                        <button
-                          className="product-management-page delete-btn"
-                          onClick={() =>
-                            handleDeleteProduct(product.product_id)
-                          }
-                        >
-                          🗑
-                        </button>
-                      </td>
+                      {loggedInUserType === "SUPER ADMIN" && (
+                        <td>
+                          <button
+                            className="product-management-page edit-btn"
+                            onClick={() => openEditProduct(product)}
+                          >
+                            ✏
+                          </button>
+                          <button
+                            className="product-management-page delete-btn"
+                            onClick={() =>
+                              handleDeleteProduct(product.product_id)
+                            }
+                          >
+                            🗑
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
               </tbody>
@@ -519,6 +567,14 @@ const ProductManagement = () => {
           <div className="product-popup" onClick={(e) => e.stopPropagation()}>
             <h2>Add Product</h2>
             <form>
+              <input
+                type="date"
+                placeholder="Enter Shipment Date"
+                value={newProduct.shipmentDate}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, shipmentDate: e.target.value })
+                }
+              />
               <input
                 type="text"
                 placeholder="Enter Item Code"
@@ -588,6 +644,7 @@ const ProductManagement = () => {
 
               <input
                 type="date"
+                placeholder="Expiration Date"
                 value={newProduct.expirationDate}
                 onChange={(e) =>
                   setNewProduct({
@@ -595,7 +652,7 @@ const ProductManagement = () => {
                     expirationDate: e.target.value,
                   })
                 }
-                min={new Date().toISOString().split("T")[0]} // Prevent past dates
+                min={new Date().toISOString().split("T")[0]}
               />
               <input
                 type="text"
@@ -631,16 +688,16 @@ const ProductManagement = () => {
             <h2>Add Stock</h2>
             <form>
               <Select
-                options={products.map((product) => ({
+                options={uniqueProducts.map((product) => ({
                   value: product.product_id,
-                  label: `${product.item_code} - ${product.lot_number}`,
+                  label: `${product.item_code} - ${product.lot_number}`, // Adjust label as needed
                 }))}
                 className="custom-react-stock-select"
                 classNamePrefix="react-select"
                 placeholder="Select Item Code"
                 isSearchable={true}
                 onChange={(selectedOption) => {
-                  const selectedProduct = products.find(
+                  const selectedProduct = uniqueProducts.find(
                     (product) => product.product_id === selectedOption.value
                   );
                   setStockDetails({
@@ -659,6 +716,18 @@ const ProductManagement = () => {
                   setStockDetails({ ...stockDetails, stock: e.target.value })
                 }
               />
+              <input
+                type="date"
+                placeholder="Enter Shipment Date"
+                value={stockDetails.shipmentDate}
+                onChange={(e) =>
+                  setStockDetails({
+                    ...stockDetails,
+                    shipmentDate: e.target.value,
+                  })
+                }
+              />
+
               <div className="popup-buttons">
                 <button
                   type="button"
@@ -732,7 +801,7 @@ const ProductManagement = () => {
                     expiration_date: e.target.value,
                   })
                 }
-                min={new Date().toISOString().split("T")[0]} // Prevent past dates
+                min={new Date().toISOString().split("T")[0]}
               />
 
               <input
