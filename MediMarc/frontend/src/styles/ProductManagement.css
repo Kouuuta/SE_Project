@@ -16,8 +16,9 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   flex-wrap: wrap;
   max-width: 100%;
-  gap: 200px;
+
   height: 215px;
+
 }
 .total-products {
   flex: 1;
@@ -302,6 +303,15 @@
   border-radius: 5px;
 }
 
+.search-bar-filter {
+  padding: 10px;
+  width: 250px;
+  font-size: 16px;
+  border: 1px solid #6a5acd;
+  border-radius: 5px;
+  
+}
+
 
 /* ✅ Responsive Styling */
 @media (max-width: 900px) {
@@ -314,3 +324,33 @@
     margin-top: 15px;
   }
 }
+
+.csv-product-btn {
+    width: 50%;
+    padding: 12px;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: #8a2be2;
+    margin-top: auto;
+}
+
+.csv-product-btn:hover {
+  background: #8400ff;
+}
+
+.product-management-page .filter-section {
+  margin-left: 15rem;
+  margin-right: 15rem;
+  align-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;  /* Align vertically in the center */
+  gap: 15px;  
+
+
+}
+

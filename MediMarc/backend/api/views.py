@@ -844,7 +844,40 @@ def generate_csv_report(sales):
 
     return response
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def generate_product_csv(request):
+    """Generate CSV report for products."""
+    item_code = request.GET.get("item_code", "")
+    
+    if item_code:
+        products = Product.objects.filter(item_code=item_code)
+    else:
+        products = Product.objects.all()
 
+    if not products:
+        return Response({"message": "No products found"}, status=404)
+    
+    # Generate CSV file
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="product-shipment_report.csv"'
+    writer = csv.writer(response)
+    
+    # Write header to CSV file
+    writer.writerow(["Shipment Date", "Item Code", "Lot Number", "Product Name", "Category", "Original Stock", "Expiration Date" ])
+
+    for product in products:
+        writer.writerow([
+            product.shipment_date.strftime('%Y-%m-%d') if product.shipment_date else "N/A",
+            product.item_code,
+            product.lot_number,
+            product.product_name,
+            product.category,
+            product.original_stock,
+            product.expiration_date.strftime("%Y-%m-%d"),
+        ])
+
+    return response
 
 def generate_pdf_report(sales, start_date, end_date, customer_name):
     """Generate a formatted PDF Sales Report with only 'Delivered' sales."""

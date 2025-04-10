@@ -214,7 +214,7 @@ const SalesReport = () => {
               }
               onClick={() => handleGenerateReport("pdf")}
             >
-              Generate PDF REPORT
+              Generate PDF
             </button>
             <button
               className="csv-btn"
@@ -223,7 +223,7 @@ const SalesReport = () => {
               }
               onClick={() => handleGenerateReport("csv")}
             >
-              Generate CSV REPORT
+              Generate CSV
             </button>
           </div>
         </div>

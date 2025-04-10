@@ -15,6 +15,7 @@ from .views import (
     LoginView,
     get_product_details,
     ActivityLogView,
+    generate_product_csv,
 )
 
 urlpatterns = [
@@ -67,5 +68,5 @@ urlpatterns = [
     path("products/recent/", views.get_recently_added_products, name="get_recently_added_products"),
     path("products/low-stock/", views.get_low_stock_products, name="get_low_stock_products"),
     path("activity-logs/", ActivityLogView.as_view(), name="activity_log_class"),
-
+    path("products/generate-csv/", generate_product_csv, name="generate_product_csv")
 ]

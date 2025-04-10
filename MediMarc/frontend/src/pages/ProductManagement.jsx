@@ -20,6 +20,8 @@ const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [totalStock, setTotalStock] = useState(0);
+  const [itemCodeFilter, setItemCodeFilter] = useState("");
+  const [selectedItemCode, setSelectedItemCode] = useState(null);
 
   const loggedInUser = JSON.parse(localStorage.getItem("user"));
   const loggedInUserType = loggedInUser.user_type_display;
@@ -406,6 +408,29 @@ const ProductManagement = () => {
   };
 
   console.log(products[0]);
+
+  const handleGenerateCSV = async () => {
+    const token = localStorage.getItem("access_token");
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/products/generate-csv/?item_code=${itemCodeFilter}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      // Trigger download
+      const blob = new Blob([response.data], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "product_report.csv";
+      link.click();
+    } catch (error) {
+      console.error("Error generating CSV:", error);
+      toast.error("Failed to generate CSV report");
+    }
+  };
+
   return (
     <div className="product-management-page">
       <main className="dashboard-content">
@@ -415,12 +440,26 @@ const ProductManagement = () => {
             <p></p>
             <h2>{totalProducts} Products</h2>
           </div>
+          <div className="filter-section">
+            <h2>Shipment Report</h2>
+            <input
+              type="text"
+              value={itemCodeFilter}
+              onChange={(e) => setItemCodeFilter(e.target.value.toUpperCase())}
+              placeholder="Filter by Item Code"
+              className="search-bar-filter"
+            />
+            <button className="csv-product-btn" onClick={handleGenerateCSV}>
+              Generate CSV
+            </button>
+          </div>
+
           <div className="search-bar-container">
             <input
               type="text"
               placeholder="Search Item Code"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
               className="search-bar"
             />
             <h3
