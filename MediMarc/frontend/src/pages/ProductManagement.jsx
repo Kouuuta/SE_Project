@@ -51,7 +51,7 @@ const ProductManagement = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setProducts(response.data); // This should include shipment_date
+        setProducts(response.data);
       } catch (error) {
         console.error(
           "Error fetching products:",
@@ -115,8 +115,8 @@ const ProductManagement = () => {
           }
         );
 
-        console.log("Total Products Fetched:", response.data); // Debugging Log
-        setTotalProducts(response.data.total2_products); // Correctly setting the state
+        console.log("Total Products Fetched:", response.data);
+        setTotalProducts(response.data.total2_products);
       } catch (error) {
         console.error(
           "Error fetching total products:",
@@ -193,13 +193,27 @@ const ProductManagement = () => {
       });
     }
   };
+  const handleItemCodeClick = (productId) => {
+    const selectedProduct = products.find(
+      (product) => product.product_id === productId
+    );
+    if (selectedProduct && selectedProduct.stock !== undefined) {
+      setSelectedProduct(selectedProduct);
+      setIsProductDetailsOpen(true); // Open product details modal
+    } else {
+      toast.error("Selected product has invalid stock data.");
+    }
+  };
 
   const handleAddProduct = async () => {
+    // Ensure fields are filled
     if (
       !newProduct.itemCode ||
       !newProduct.productName ||
       !newProduct.sellingPrice ||
-      !newProduct.shipmentDate
+      !newProduct.shipmentDate ||
+      !newProduct.inStock ||
+      !newProduct.category
     ) {
       toast.warning("All required fields must be filled.", { duration: 2000 });
       return;
@@ -207,6 +221,7 @@ const ProductManagement = () => {
 
     try {
       const token = localStorage.getItem("access_token");
+
       const response = await axios.post(
         "http://localhost:8000/api/products/add/",
         {
@@ -215,7 +230,8 @@ const ProductManagement = () => {
           category: newProduct.category,
           buying_price: newProduct.buyingPrice || 0,
           selling_price: newProduct.sellingPrice || 0,
-          stock: newProduct.inStock || 0,
+          stock: newProduct.inStock, // stock to the input value (sales stock)
+          original_stock: newProduct.inStock, // set original stock to the same value
           lot_number: newProduct.lotNumber,
           expiration_date: newProduct.expirationDate,
           shipment_date: newProduct.shipmentDate,
@@ -225,12 +241,20 @@ const ProductManagement = () => {
         }
       );
 
+      // Get updated product data to reflect changes in the UI
+      const updatedProductsResponse = await axios.get(
+        "http://localhost:8000/api/products/",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log(response.data);
+      setProducts(updatedProductsResponse.data); // Update state with new data
       toast.success("Product added successfully!", { duration: 2000 });
-      setProducts([...products, response.data]);
 
+      // Reset form
       setNewProduct({
         itemCode: "",
-        productId: "",
         productName: "",
         category: "",
         buyingPrice: "",
@@ -241,7 +265,7 @@ const ProductManagement = () => {
         shipmentDate: "",
       });
 
-      closeAddProduct();
+      closeAddProduct(); // Close popup/modal
     } catch (error) {
       console.error(
         "Error adding product:",
@@ -316,66 +340,55 @@ const ProductManagement = () => {
       return;
     }
 
+    const stockValue = parseInt(stockDetails.stock, 10);
+    if (isNaN(stockValue) || stockValue <= 0) {
+      toast.error("Please enter a valid stock quantity.");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("access_token");
 
       const response = await axios.put(
         `http://localhost:8000/api/products/${encodeURIComponent(stockDetails.productId)}/update-stock/`,
         {
-          stock: parseInt(stockDetails.stock, 10),
-          shipment_date: stockDetails.shipmentDate, // Send the shipment date with stock update
+          stock: stockValue,
+          shipment_date: stockDetails.shipmentDate,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success(`${response.data.message}`, { duration: 2000 });
+      const updatedProduct = response.data.new_product;
 
-      // Update the product list with new stock and shipment date
-      setProducts((prevProducts) =>
-        prevProducts.map((product) =>
-          product.product_id === stockDetails.productId
-            ? {
-                ...product,
-                stock: response.data.new_stock,
-                shipment_date: stockDetails.shipmentDate,
-              }
-            : product
-        )
-      );
+      if (updatedProduct && updatedProduct.stock !== undefined) {
+        setProducts((prevProducts) => {
+          const updatedProducts = prevProducts.map((product) =>
+            product.product_id === updatedProduct.product_id
+              ? {
+                  ...product,
+                  stock: updatedProduct.stock,
+                  original_stock: updatedProduct.original_stock,
+                }
+              : product
+          );
 
-      setStockDetails({ productId: "", stock: "", shipmentDate: "" }); // Reset the stock details and shipment date
-      closeAddStock(); // Close the Add Stock modal
+          return updatedProducts;
+        });
+
+        toast.error("Stock added successfully!", { duration: 2000 });
+      } else {
+        toast.success("Stock added successfully!", { duration: 2000 });
+      }
+
+      // Reset form and close modal
+      setStockDetails({ productId: "", stock: "", shipmentDate: "" });
+      closeAddStock();
     } catch (error) {
       console.error(
         "Error updating stock:",
         error.response?.data || error.message
       );
       toast.error("Failed to update stock. Please try again.");
-    }
-  };
-
-  const handleItemCodeClick = async (product_id) => {
-    if (!product_id) {
-      toast.error("Invalid Product ID.");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("access_token");
-      const response = await axios.get(
-        `http://localhost:8000/api/products/${encodeURIComponent(product_id)}/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (response.data) {
-        setSelectedProduct(response.data);
-        setIsProductDetailsOpen(true);
-      } else {
-        toast.error("Product not found.");
-      }
-    } catch (error) {
-      console.error("Error fetching product details:", error);
-      toast.error("Failed to load product details.");
     }
   };
 
@@ -392,6 +405,7 @@ const ProductManagement = () => {
     return new Intl.NumberFormat().format(number);
   };
 
+  console.log(products[0]);
   return (
     <div className="product-management-page">
       <main className="dashboard-content">
@@ -459,12 +473,12 @@ const ProductManagement = () => {
             <table className="product-table">
               <thead>
                 <tr>
-                  <th>Product ID</th>
                   <th>Shipment Date</th>
                   <th>Item Code</th>
                   <th>Product Name</th>
                   <th>Categories</th>
-                  <th>Stock</th>
+                  <th>Original Stock</th>
+                  <th>Sales Stock</th>
                   <th>Selling Price</th>
                   {loggedInUserType === "SUPER ADMIN" && <th>Actions</th>}
                 </tr>
@@ -472,9 +486,8 @@ const ProductManagement = () => {
               <tbody>
                 {[...products]
                   .sort((a, b) => b.product_id - a.product_id)
-                  .map((product) => (
-                    <tr key={product.id || product.item_code || Math.random()}>
-                      <td>{product.product_id}</td>
+                  .map((product, key) => (
+                    <tr key={key}>
                       <td>
                         {product.shipment_date
                           ? new Date(product.shipment_date).toLocaleDateString()
@@ -495,6 +508,9 @@ const ProductManagement = () => {
                       <td>
                         {product.category ? product.category : "Uncategorized"}
                       </td>
+                      <td style={{ fontWeight: "bold", color: "black" }}>
+                        {formatNumber(product.original_stock || 0)}
+                      </td>{" "}
                       <td>
                         {formatNumber(
                           product.stock !== null ? product.stock : 0
@@ -592,6 +608,7 @@ const ProductManagement = () => {
                       productName: matchedProduct.product_name,
                       category: matchedProduct.category,
                       sellingPrice: matchedProduct.selling_price,
+                      originalStock: matchedProduct.original_stock, // Ensure matching the original stock
                     });
                   } else {
                     setNewProduct({
@@ -600,6 +617,7 @@ const ProductManagement = () => {
                       productName: "",
                       category: "",
                       sellingPrice: "",
+                      originalStock: "", // Clear original stock when no match
                     });
                   }
                 }}
@@ -616,7 +634,7 @@ const ProductManagement = () => {
                 value={newProduct.category}
                 onChange={(e) =>
                   setNewProduct({ ...newProduct, category: e.target.value })
-                } // ✅ Use `category`
+                }
               >
                 <option value="">Select Category</option>
                 {categories.map((category) => (
@@ -625,13 +643,19 @@ const ProductManagement = () => {
                   </option>
                 ))}
               </select>
+
               <input
                 type="text"
                 placeholder="Enter Stock"
                 value={newProduct.inStock}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, inStock: e.target.value })
-                }
+                onChange={(e) => {
+                  const stockValue = e.target.value;
+                  setNewProduct({
+                    ...newProduct,
+                    inStock: stockValue,
+                    originalStock: stockValue,
+                  });
+                }}
               />
               <input
                 type="text"

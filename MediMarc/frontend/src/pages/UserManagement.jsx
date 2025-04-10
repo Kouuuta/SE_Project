@@ -91,6 +91,12 @@ const UserManagementPage = () => {
     try {
       const token = localStorage.getItem("access_token");
 
+      // Ensure token is available and pass it in the headers
+      if (!token) {
+        toast.error("You are not authorized. Please log in again.");
+        return;
+      }
+
       const response = await axios.put(
         `http://localhost:8000/api/users/${editUser.id}/edit/`,
         {
@@ -100,7 +106,9 @@ const UserManagementPage = () => {
           last_name: editUser.name.split(" ")[1] || "",
           user_type: editUser.userType,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` }, // Pass the token in the header
+        }
       );
 
       if (response.status === 200) {
@@ -310,7 +318,7 @@ const UserManagementPage = () => {
         <table className="user-management-table">
           <thead>
             <tr>
-              <th>Full Name</th>
+              <th>Name</th>
               <th>Username</th>
               <th>Email</th>
               <th>Role</th>

@@ -8,6 +8,8 @@ from rest_framework import viewsets
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils import timezone
 from datetime import datetime
+from easyaudit.models import ContentType, CRUDEvent, LoginEvent
+
 
 class UserSerializer(serializers.ModelSerializer):
     user_type_display = serializers.SerializerMethodField()  
@@ -37,6 +39,7 @@ class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category', read_only=True)  # ✅ Ensures correct display
     product_id = serializers.IntegerField(read_only=True)
     shipment_date = serializers.DateField(required=False)
+    
 
     class Meta:
         model = Product
@@ -83,3 +86,8 @@ class SaleViewSet(ModelViewSet):
             return Response({"product": ["Product ID does not exist."]}, status=status.HTTP_400_BAD_REQUEST)
 
         return super().create(request, *args, **kwargs)
+
+class LoginEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LoginEvent
+        fields = "__all__"

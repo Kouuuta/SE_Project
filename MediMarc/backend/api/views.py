@@ -45,50 +45,6 @@ from easyaudit.models import CRUDEvent
 from rest_framework.views import APIView
 from django.core.paginator import Paginator
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_daily_sales(request):
-    """Returns today's sales (paginated, 5 per page)"""
-    today = timezone.now().date()
-    sales = Sale.objects.filter(date=today, status="Delivered").order_by("-id")
-
-    paginator = Paginator(sales, 5)
-    page_number = request.GET.get("page", 1)
-    page = paginator.get_page(page_number)
-
-    serialized = SaleSerializer(page.object_list, many=True)
-    return Response({
-        "sales": serialized.data,
-        "has_next": page.has_next(),
-        "has_previous": page.has_previous(),
-        "total_pages": paginator.num_pages,
-        "current_page": page.number
-    })
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_monthly_sales(request):
-    """Returns this month’s sales (paginated, 5 per page)"""
-    now = timezone.now()
-    start_month = now.replace(day=1)
-    end_month = now.replace(day=1) + timedelta(days=32)
-    end_month = end_month.replace(day=1)
-
-    sales = Sale.objects.filter(date__gte=start_month, date__lt=end_month, status="Delivered").order_by("-id")
-
-    paginator = Paginator(sales, 5)
-    page_number = request.GET.get("page", 1)
-    page = paginator.get_page(page_number)
-
-    serialized = SaleSerializer(page.object_list, many=True)
-    return Response({
-        "sales": serialized.data,
-        "has_next": page.has_next(),
-        "has_previous": page.has_previous(),
-        "total_pages": paginator.num_pages,
-        "current_page": page.number
-    })
-
 
 class ActivityLogView(APIView):
     permission_classes = [IsAuthenticated]
@@ -411,6 +367,7 @@ def get_products(request):
             "buying_price": product["buying_price"] or 0,
             "selling_price": product["selling_price"] or 0,
             "stock": product["stock"] or 0,
+            "original_stock": product["original_stock"] or 0,
             "lot_number": product["lot_number"] or "N/A",  # ✅ Ensure Lot Number is included
             "expiration_date": product["expiration_date"] or "N/A",  # ✅ Ensure Expiration Date is included
             "shipment_date": product["shipment_date"] or "N/A", 
@@ -436,12 +393,16 @@ def add_product(request):
         )
 
     # Create Product
-    serializer = ProductSerializer(data=request.data)
+    data = request.data.copy()
+    data["sales_stock"] = data.get("original_stock", 0)  # Ensure sales stock is equal to original stock
+    serializer = ProductSerializer(data=data)
+
     if serializer.is_valid():
         serializer.save(category=category_instance.name)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(["PUT"])
@@ -483,7 +444,7 @@ def delete_product(request, product_id):
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_stock(request, product_id):
-    """Update stock for a product using product_id, including shipment date."""
+    """Add new stock for a product, creating a new entry with the same product data."""
     try:
         product = Product.objects.get(product_id=product_id)
     except Product.DoesNotExist:
@@ -492,7 +453,10 @@ def update_stock(request, product_id):
         )
 
     try:
-        stock_to_add = int(request.data.get("stock", 0))
+        # Log the request data to debug
+        print(f"Request data: {request.data}")
+
+        stock_to_add = int(request.data.get("stock", 0))  # Ensure 'stock' is present
         shipment_date = request.data.get("shipment_date", None)
 
         if stock_to_add < 0:
@@ -501,33 +465,26 @@ def update_stock(request, product_id):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Add new stock entry with a new shipment date
+        # Create a new product entry with the same details but new stock
         new_product_entry = Product.objects.create(
             item_code=product.item_code,
             product_name=product.product_name,
             category=product.category,
             buying_price=product.buying_price,
             selling_price=product.selling_price,
-            stock=stock_to_add,
+            stock=stock_to_add,  # New sales stock
+            original_stock=stock_to_add,  # New original stock
             lot_number=product.lot_number,
             expiration_date=product.expiration_date,
-            shipment_date=shipment_date  # Save the shipment date
+            shipment_date=shipment_date,  # Save the new shipment date
         )
-
-        # Update the product's stock
-        product.stock += stock_to_add
-        product.save()
 
         return Response(
-            {"message": "Stock updated successfully", "new_stock": product.stock},
-            status=status.HTTP_200_OK,
+            {"message": "Stock added successfully", "new_product_id": new_product_entry.product_id},
+            status=status.HTTP_201_CREATED,
         )
-
-    except ValueError:
-        return Response(
-            {"error": "Invalid stock value. Must be an integer."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -830,6 +787,7 @@ class GenerateSalesReport(APIView):
         start_date = request.GET.get("start_date", "N/A")
         end_date = request.GET.get("end_date", "N/A")
         customer_name = request.GET.get("customer_name", "")
+        item_code = request.GET.get("item_code", "")
         format_type = request.GET.get("format_type", "csv").lower()
 
         # Get all sales, but filter to only include "Delivered" status sales
@@ -842,6 +800,10 @@ class GenerateSalesReport(APIView):
         # Further filter by customer if provided
         if customer_name:
             sales = sales.filter(customer__name=customer_name)
+        
+        if item_code and item_code != "all":
+            sales = sales.filter(product__item_code=item_code)
+
 
         # Check if there are sales after filtering
         if not sales.exists():

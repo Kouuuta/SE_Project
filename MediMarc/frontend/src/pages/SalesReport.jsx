@@ -72,7 +72,7 @@ const SalesReport = () => {
       const start = dateRange.start;
       const end = dateRange.end;
 
-      // ⛔ Check if there are sales in the selected range
+      // Check if there are sales in the selected range
       const filteredByDate = sales.filter((sale) => {
         const saleDate = new Date(sale.date);
         const startDate = new Date(start);

@@ -88,6 +88,9 @@ const Sales = () => {
     fetchSales();
   }, []);
 
+  const filterDailySales = (sales) => sales; // Just return all sales without filtering
+  const filterMonthlySales = (sales) => sales; // Just return all sales without filtering
+
   useEffect(() => {
     const fetchSummarySales = async () => {
       try {
@@ -96,24 +99,39 @@ const Sales = () => {
         const [dailyRes, monthlyRes] = await Promise.all([
           axios.get(
             `http://localhost:8000/api/sales/daily/?page=${dailyPage}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+            { headers: { Authorization: `Bearer ${token}` } }
           ),
           axios.get(
             `http://localhost:8000/api/sales/monthly/?page=${monthlyPage}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+            { headers: { Authorization: `Bearer ${token}` } }
           ),
         ]);
 
-        setDailySales(dailyRes.data);
-        setMonthlySales(monthlyRes.data);
+        // Debugging logs to inspect fetched data before filtering
+        console.log("📌 Daily Sales Data Fetched:", dailyRes.data.sales);
+        console.log("📌 Monthly Sales Data Fetched:", monthlyRes.data.sales);
+
+        const filteredDailySales = filterDailySales(dailyRes.data.sales);
+        const filteredMonthlySales = filterMonthlySales(monthlyRes.data.sales);
+
+        // Log filtered sales data to confirm the filtering logic
+        console.log("📌 Filtered Daily Sales:", filteredDailySales);
+        console.log("📌 Filtered Monthly Sales:", filteredMonthlySales);
+
+        setDailySales({
+          ...dailyRes.data,
+          sales: filteredDailySales,
+        });
+
+        setMonthlySales({
+          ...monthlyRes.data,
+          sales: filteredMonthlySales,
+        });
       } catch (error) {
         console.error("Error fetching sales summaries:", error);
       }
     };
+
     fetchSummarySales();
   }, [dailyPage, monthlyPage]);
 
@@ -264,7 +282,7 @@ const Sales = () => {
       return;
     }
 
-    // ✅ Ensure correct product ID from Product Management
+    // Ensure correct product ID from Product Management
     const customerObj = customers.find(
       (customer) => customer.id === parseInt(selectedCustomer, 10)
     );
@@ -278,27 +296,20 @@ const Sales = () => {
       return;
     }
 
-    // ✅ Debugging logs before sending the request
-    console.log("🔍 Selected Product from Product Management:", productObj);
-    console.log("🔍 Selected Customer:", customerObj);
+    // Aggregate quantities for the same item (same item_code, lot_number, expiration_date)
+    const combinedQuantity = newSale.quantity; // You may need to modify this to aggregate based on the selected products
 
-    // ✅ Fix: Send "product" key instead of "product_id"
     const salePayload = {
       invoice_number: newSale.invoiceNumber,
       customer: parseInt(customerObj.id, 10),
       product: parseInt(productObj.product_id, 10),
-      quantity: parseInt(newSale.quantity, 10),
+      quantity: combinedQuantity, // Use aggregated quantity
       total: parseFloat(newSale.total),
       date: newSale.date,
       lotNumber: productObj.lot_number,
       expirationDate: productObj.expiration_date,
-      status: "Pending",
+      status: "Pending", // Set default status to "Pending"
     };
-
-    console.log(
-      "📌 FINAL Sale Data (Before Sending to Backend):",
-      JSON.stringify(salePayload, null, 2)
-    );
 
     try {
       const token = localStorage.getItem("access_token");
@@ -308,9 +319,24 @@ const Sales = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      // Update sales list
       setSales([...sales, response.data]);
+
+      // Update product stock (subtract the sold quantity)
+      const updatedProducts = products.map((product) =>
+        product.product_id === productObj.product_id
+          ? {
+              ...product,
+              stock: product.stock - combinedQuantity, // Subtract the sold quantity from stock
+            }
+          : product
+      );
+
+      setProducts(updatedProducts); // Update product list with new stock
+
       toast.success("Sale added successfully!", { duration: 2000 });
 
+      // Reset form
       setNewSale({
         itemCode: "",
         productName: "",
@@ -323,16 +349,8 @@ const Sales = () => {
         expirationDate: "",
       });
     } catch (error) {
-      console.error(
-        "❌ Error adding sale:",
-        error.response?.data || error.message
-      );
-      toast.error(
-        `Error: ${JSON.stringify(error.response?.data || error.message)}`,
-        {
-          duration: 5000,
-        }
-      );
+      console.error("❌ Error adding sale:", error);
+      toast.error("Failed to add sale.", { duration: 2000 });
     }
   };
 
@@ -388,16 +406,31 @@ const Sales = () => {
 
       toast.success(`Sale status updated to ${newStatus}`);
 
+      // If status is 'Delivered', subtract the sold quantity from stock
+      if (newStatus === "Delivered") {
+        const product = response.data.product; // Assuming this includes product data
+        const quantitySold = response.data.quantity; // Assuming the quantity is available in response
+
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.product_id === product.product_id
+              ? {
+                  ...product,
+                  stock: product.stock - quantitySold, // Subtract the sold quantity from stock
+                }
+              : product
+          )
+        );
+      }
+
+      // Update sales with the new status
       setSales((prevSales) =>
         prevSales.map((sale) =>
           sale.id === saleId ? { ...sale, status: response.data.status } : sale
         )
       );
     } catch (error) {
-      console.error(
-        "❌ Error updating sale status:",
-        error.response?.data || error.message
-      );
+      console.error("❌ Error updating sale status:", error);
     }
   };
 
@@ -409,94 +442,6 @@ const Sales = () => {
     <div className="sales-page-management">
       <div className="sales-page">
         <main className="sales-content">
-          <div className="sales-summary">
-            <div className="sales-daily">
-              <h2>Daily Sales</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item Code</th>
-                    <th>Quantity Sold</th>
-                    <th>Total</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dailySales?.results?.map((sale, index) => (
-                    <tr key={index}>
-                      <td>{sale.itemCode}</td>
-                      <td>{sale.quantity}</td>
-                      <td>{`$${sale.total}`}</td>
-                      <td>{sale.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="pagination">
-                <button
-                  onClick={() => setDailyPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={!dailySales.has_previous}
-                >
-                  Previous
-                </button>
-                <span>
-                  Page {dailySales.current_page || 1} of{" "}
-                  {dailySales.total_pages || 1}
-                </span>
-                <button
-                  onClick={() => setDailyPage((prev) => prev + 1)}
-                  disabled={!dailySales.has_next}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-
-            <div className="sales-monthly">
-              <h2>Monthly Sales</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item Code</th>
-                    <th>Quantity</th>
-                    <th>Total</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {monthlySales?.results?.map((sale, index) => (
-                    <tr key={index}>
-                      <td>{sale.productName}</td>
-                      <td>{sale.quantity}</td>
-                      <td>{`$${sale.total}`}</td>
-                      <td>{sale.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="pagination">
-                <button
-                  onClick={() =>
-                    setMonthlyPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={!monthlySales.has_previous}
-                >
-                  Previous
-                </button>
-                <span>
-                  Page {monthlySales.current_page || 1} of{" "}
-                  {monthlySales.total_pages || 1}
-                </span>
-                <button
-                  onClick={() => setMonthlyPage((prev) => prev + 1)}
-                  disabled={!monthlySales.has_next}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-
           <div className="sales-details-container">
             <div className="sales-details">
               <h2>Sales</h2>
@@ -524,7 +469,6 @@ const Sales = () => {
                     <tr>
                       <th>SI No.</th>
                       <th>Date Invoice</th>
-                      <th>Product ID</th>
                       <th>Item Code</th>
                       <th>Product Name</th>
                       <th>Quantity</th>
@@ -550,7 +494,6 @@ const Sales = () => {
                                 String(sale.id).padStart(4, "0")}
                             </td>
                             <td>{sale.date}</td>
-                            <td>{sale.product_id}</td>
                             <td>{sale.item_code}</td>
                             <td>{sale.product_name}</td>
                             <td>{formatNumber(sale.quantity)}</td>
@@ -715,7 +658,7 @@ const Sales = () => {
                 <Select
                   options={products.map((product) => ({
                     value: product.product_id,
-                    label: `${product.item_code} - ${product.lot_number}`,
+                    label: `${product.item_code} - ${product.lot_number} - ${product.stock}`,
                   }))}
                   className="custom-react-add-select"
                   classNamePrefix="react-select"
