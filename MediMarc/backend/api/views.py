@@ -201,7 +201,7 @@ def forgot_password(request):
             <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                 <h2 style="color: #2c3e50;">Password Reset Request</h2>
                 <p>Hello,</p>
-                <p>You have requested to reset your password. Please click the link below to proceed:</p>
+                <p>You have requested to reset your password. Please click the button below to proceed:</p>
                 <p>
                     <a href="{reset_link}" style="display: inline-block; padding: 5px 10px; background-color: #3498db; 
                     color: white; text-decoration: none; border-radius: 5px;">Reset Your Password</a>
@@ -561,7 +561,7 @@ def get_recently_added_products(request):
 @permission_classes([IsAuthenticated])
 def get_low_stock_products(request):
     """Fetch products with stock less than or equal to 100"""
-    low_stock_products = Product.objects.filter(stock__lte=100)
+    low_stock_products = Product.objects.filter(stock__lte=1000)
     serializer = ProductSerializer(low_stock_products, many=True)
     return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
 

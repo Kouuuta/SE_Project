@@ -237,7 +237,9 @@ const HomePage = () => {
               {lowStockProducts.map((product) => (
                 <tr key={product.product_id}>
                   <td>{product.item_code}</td>
-                  <td style={{ color: product.stock <= 100 ? "red" : "black" }}>
+                  <td
+                    style={{ color: product.stock <= 1000 ? "red" : "black" }}
+                  >
                     {product.stock}
                   </td>
                 </tr>
