@@ -145,8 +145,28 @@ const HomePage = () => {
     fetchDashboardData();
   }, []);
 
-  const formatNumber = (number) => {
-    return new Intl.NumberFormat().format(number);
+  const formatCurrency = (value) => {
+    // Handle undefined, null, or empty strings
+    if (value === undefined || value === null || value === "") {
+      return "₱0.00";
+    }
+
+    // Convert to number if it's a string
+    const numValue = typeof value === "string" ? parseFloat(value) : value;
+
+    // Check if it's a valid number
+    if (isNaN(numValue)) {
+      return "₱0.00";
+    }
+
+    // Format with 2 decimal places and thousands separators
+    return (
+      "₱" +
+      numValue.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    );
   };
 
   return (
@@ -197,7 +217,7 @@ const HomePage = () => {
                   <td>{sale.product_id}</td>
                   <td>{sale.item_code}</td>
                   <td>{new Date(sale.date).toLocaleDateString()}</td>
-                  <td>₱{formatNumber(sale.total.toLocaleString())}</td>
+                  <td>{formatCurrency(sale.total.toLocaleString())}</td>
                 </tr>
               ))}
             </tbody>

@@ -641,14 +641,21 @@ const ProductManagement = () => {
           <div className="product-popup" onClick={(e) => e.stopPropagation()}>
             <h2>Add Product</h2>
             <form>
-              <input
-                type="date"
-                placeholder="Enter Shipment Date"
-                value={newProduct.shipmentDate}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, shipmentDate: e.target.value })
-                }
-              />
+              <div className="date-input-group">
+                <label htmlFor="shipmentDate">Shipment Date</label>
+                <input
+                  id="shipmentDate"
+                  type="date"
+                  placeholder="dd/mm/yyyy"
+                  value={newProduct.shipmentDate}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      shipmentDate: e.target.value,
+                    })
+                  }
+                />
+              </div>
               <input
                 type="text"
                 placeholder="Enter Item Code"
