@@ -543,7 +543,7 @@ def get_total_products(request):
 @permission_classes([IsAuthenticated])
 def get_latest_sales(request):
     """Fetch the 10 most recent sales."""
-    latest_sales = Sale.objects.filter(status="Delivered").order_by("-id")[:5]
+    latest_sales = Sale.objects.filter(status="Delivered").order_by("-id")[:20]
     serializer = SaleSerializer(latest_sales, many=True)
     return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
 
@@ -552,7 +552,7 @@ def get_latest_sales(request):
 @permission_classes([IsAuthenticated])
 def get_recently_added_products(request):
     """Fetch the 5 most recently added products"""
-    recent_products = Product.objects.order_by("-created_at")[:5]  # Query by `created_at` to get recent products
+    recent_products = Product.objects.order_by("-created_at")[:20]  # Query by `created_at` to get recent products
     serializer = ProductSerializer(recent_products, many=True)
     return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
 

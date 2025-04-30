@@ -406,6 +406,25 @@ const ProductManagement = () => {
   const formatNumber = (number) => {
     return new Intl.NumberFormat().format(number);
   };
+  const formatCurrency = (value) => {
+    if (value === undefined || value === null || value === "") {
+      return "₱0.00";
+    }
+
+    // Convert to number if it's a string
+    const numValue = typeof value === "string" ? parseFloat(value) : value;
+
+    // Check if it's a valid number
+    if (isNaN(numValue)) {
+      return "₱0.00";
+    }
+
+    // Format with 2 decimal places and thousands separators
+    return numValue.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   console.log(products[0]);
 
@@ -557,7 +576,7 @@ const ProductManagement = () => {
                       </td>
                       <td>
                         {product.selling_price
-                          ? `₱${formatNumber(product.selling_price)}`
+                          ? `₱${formatCurrency(product.selling_price)}`
                           : "N/A"}
                       </td>
                       {loggedInUserType === "SUPER ADMIN" && (
@@ -685,7 +704,7 @@ const ProductManagement = () => {
 
               <input
                 type="text"
-                placeholder="Enter Stock"
+                placeholder="Enter Stock Quantity"
                 value={newProduct.inStock}
                 onChange={(e) => {
                   const stockValue = e.target.value;

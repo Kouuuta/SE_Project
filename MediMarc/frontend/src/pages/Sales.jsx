@@ -437,6 +437,22 @@ const Sales = () => {
   const formatNumber = (number) => {
     return new Intl.NumberFormat().format(number);
   };
+  const formatCurrency = (value) => {
+    if (value === undefined || value === null || value === "") {
+      return "₱0.00";
+    }
+
+    const numValue = typeof value === "string" ? parseFloat(value) : value;
+
+    if (isNaN(numValue)) {
+      return "₱0.00";
+    }
+
+    return numValue.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   return (
     <div className="sales-page-management">
@@ -497,7 +513,7 @@ const Sales = () => {
                             <td>{sale.item_code}</td>
                             <td>{sale.product_name}</td>
                             <td>{formatNumber(sale.quantity)}</td>
-                            <td>₱{formatNumber(sale.total)}</td>
+                            <td>₱{formatCurrency(sale.total)}</td>
                             <td>{sale.lot_number}</td>
                             <td>{sale.expiration_date}</td>
                             {loggedInUserType === "SUPER ADMIN" && (
