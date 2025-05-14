@@ -27,6 +27,29 @@ const HomePage = () => {
   const [selectedRange, setSelectedRange] = useState("30");
 
   useEffect(() => {
+    const fetchLowStockProducts = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const response = await axios.get(
+          "http://localhost:8000/api/products/low-stock/",
+          { headers }
+        );
+
+        setLowStockProducts(response.data); // This will now have aggregated stock data
+      } catch (error) {
+        console.error(
+          "Error fetching low stock products:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    fetchLowStockProducts();
+  }, []);
+
+  useEffect(() => {
     const fetchSalesData = async () => {
       try {
         const token = localStorage.getItem("access_token");
@@ -245,7 +268,7 @@ const HomePage = () => {
         </div>
 
         <div className="low-stock-scroll">
-          <h3>Low Stock Product</h3>
+          <h3>Low Stock Products</h3>
           <table>
             <thead>
               <tr>
@@ -255,12 +278,14 @@ const HomePage = () => {
             </thead>
             <tbody>
               {lowStockProducts.map((product) => (
-                <tr key={product.product_id}>
+                <tr key={product.item_code}>
                   <td>{product.item_code}</td>
                   <td
-                    style={{ color: product.stock <= 1000 ? "red" : "black" }}
+                    style={{
+                      color: product.total_stock <= 200 ? "red" : "black",
+                    }}
                   >
-                    {product.stock}
+                    {product.total_stock}
                   </td>
                 </tr>
               ))}

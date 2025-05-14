@@ -654,7 +654,7 @@ const Sales = () => {
               className="add-sale-modal"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2>Add Sale</h2>
+              <h2>Add Sales</h2>
               <form>
                 <input
                   type="text"

@@ -67,7 +67,7 @@ class ActivityLogView(APIView):
             data.append({
                 "id": event.id,
                 "username": user.username if user else "Login",
-                "role": user.get_user_type_display() if user else "N/A",
+                "role": user.get_user_type_display() if user else "Success",
                 "action": action_map.get(event.event_type, "Unknown"),
                 "page": event.content_type.model.replace("_", " ").title(),
                 "timestamp": event.datetime.isoformat(),
@@ -560,10 +560,15 @@ def get_recently_added_products(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_low_stock_products(request):
-    """Fetch products with stock less than or equal to 100"""
-    low_stock_products = Product.objects.filter(stock__lte=1000)
-    serializer = ProductSerializer(low_stock_products, many=True)
-    return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+    """Fetch products with aggregated stock by item code, only showing item codes with stock <= 500."""
+    low_stock_products = Product.objects.values('item_code')\
+        .annotate(total_stock=Sum('stock'))\
+        .filter(total_stock__lte=500)  # Only show items with stock less than or equal to 500
+
+    # Convert the QuerySet to a list of dictionaries before passing it to JsonResponse
+    low_stock_products_list = list(low_stock_products)
+
+    return JsonResponse(low_stock_products_list, safe=False, status=status.HTTP_200_OK)
 
 
 @api_view(["GET", "POST"])
