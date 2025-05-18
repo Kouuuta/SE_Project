@@ -1,5 +1,6 @@
 import csv
 import json
+from django.db.models import F
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Count, Sum
@@ -45,6 +46,31 @@ from easyaudit.models import CRUDEvent
 from rest_framework.views import APIView
 from django.core.paginator import Paginator
 
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_critical_stock(request, product_id):
+    """Update critical stock value for a product."""
+    try:
+        product = Product.objects.get(product_id=product_id)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    critical_stock = request.data.get("critical_stock")
+
+    if critical_stock is None or critical_stock == '':
+        return Response({"error": "Critical stock value is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Ensure the critical stock is a valid number
+        critical_stock = int(critical_stock)
+    except ValueError:
+        return Response({"error": "Critical stock must be a valid number"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Save the updated critical stock value
+    product.critical_stock = critical_stock
+    product.save()
+
+    return Response({"message": "Critical stock updated successfully"}, status=status.HTTP_200_OK)
 
 class ActivityLogView(APIView):
     permission_classes = [IsAuthenticated]
@@ -371,6 +397,7 @@ def get_products(request):
             "lot_number": product["lot_number"] or "N/A",  # ✅ Ensure Lot Number is included
             "expiration_date": product["expiration_date"] or "N/A",  # ✅ Ensure Expiration Date is included
             "shipment_date": product["shipment_date"] or "N/A", 
+            "critical_stock": product["critical_stock"] or 0,  # Ensure critical stock is included
         }
         for index, product in enumerate(serializer.data)
     ]
@@ -561,14 +588,15 @@ def get_recently_added_products(request):
 @permission_classes([IsAuthenticated])
 def get_low_stock_products(request):
     """Fetch products with aggregated stock by item code, only showing item codes with stock <= 500."""
-    low_stock_products = Product.objects.values('item_code')\
-        .annotate(total_stock=Sum('stock'))\
-        .filter(total_stock__lte=500)  # Only show items with stock less than or equal to 500
-
+    low_stock_products = Product.objects.values('item_code') \
+        .annotate(total_stock=Sum('stock')) \
+        .filter(total_stock__lte=F('critical_stock'))  # Check against the critical stock value
+    
     # Convert the QuerySet to a list of dictionaries before passing it to JsonResponse
     low_stock_products_list = list(low_stock_products)
 
     return JsonResponse(low_stock_products_list, safe=False, status=status.HTTP_200_OK)
+
 
 
 @api_view(["GET", "POST"])

@@ -27,6 +27,7 @@ const HomePage = () => {
   const [selectedRange, setSelectedRange] = useState("30");
 
   useEffect(() => {
+    // Inside HomePage.jsx or wherever you need to refresh low stock products:
     const fetchLowStockProducts = async () => {
       try {
         const token = localStorage.getItem("access_token");
@@ -37,7 +38,7 @@ const HomePage = () => {
           { headers }
         );
 
-        setLowStockProducts(response.data); // This will now have aggregated stock data
+        setLowStockProducts(response.data); // Update the low stock products state
       } catch (error) {
         console.error(
           "Error fetching low stock products:",
@@ -282,7 +283,7 @@ const HomePage = () => {
                   <td>{product.item_code}</td>
                   <td
                     style={{
-                      color: product.total_stock <= 200 ? "red" : "black",
+                      color: product.total_stock <= 500 ? "red" : "black",
                     }}
                   >
                     {product.total_stock}

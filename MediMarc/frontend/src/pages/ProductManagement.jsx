@@ -36,34 +36,42 @@ const ProductManagement = () => {
     sellingPrice: "",
   });
 
+  const fetchLowStockProducts = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.get(
+        "http://localhost:8000/api/products/low-stock/",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setFilteredProducts(response.data); // Update the low stock products state
+    } catch (error) {
+      console.error(
+        "Error fetching low stock products:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
       navigate("/"); // Redirect to login if no token found
     }
   }, []);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const response = await axios.get(
-          "http://localhost:8000/api/products/",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setProducts(response.data);
-      } catch (error) {
-        console.error(
-          "Error fetching products:",
-          error.response?.data || error.message
-        );
-      }
-    };
-
-    fetchProducts();
-  }, []);
+  const fetchProducts = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.get("http://localhost:8000/api/products/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProducts(response.data);
+    } catch (error) {
+      console.error(
+        "Error fetching products:",
+        error.response?.data || error.message
+      );
+    }
+  };
 
   useEffect(() => {
     if (searchTerm) {
@@ -128,6 +136,10 @@ const ProductManagement = () => {
     };
 
     fetchTotalProducts();
+  }, []);
+
+  useEffect(() => {
+    fetchProducts(); // Fetch products when the component is mounted
   }, []);
 
   const [stockDetails, setStockDetails] = useState({ category: "", stock: "" });
@@ -252,6 +264,9 @@ const ProductManagement = () => {
       );
       console.log(response.data);
       setProducts(updatedProductsResponse.data); // Update state with new data
+      toast.success("Product added successfully!", { duration: 2000 });
+
+      fetchProducts(); // Refresh product list after adding a new product
       toast.success("Product added successfully!", { duration: 2000 });
 
       // Reset form
@@ -450,6 +465,34 @@ const ProductManagement = () => {
     }
   };
 
+  const handleUpdateCriticalStock = async (productId, newCriticalStock) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.put(
+        `http://localhost:8000/api/products/${productId}/update-critical-stock/`,
+        { critical_stock: newCriticalStock },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Critical stock updated successfully!", { duration: 2000 });
+
+      // Fetch low stock products after critical stock update
+      fetchLowStockProducts(); // Ensure low stock products are refreshed
+
+      // Optionally, refresh the product list as well
+      fetchProducts();
+    } catch (error) {
+      console.error("Error updating critical stock:", error);
+      toast.error("Failed to update critical stock. Please try again.", {
+        duration: 2000,
+      });
+    }
+  };
+
   return (
     <div className="product-management-page">
       <main className="dashboard-content">
@@ -538,6 +581,8 @@ const ProductManagement = () => {
                   <th>Original Stock</th>
                   <th>Sales Stock</th>
                   <th>Selling Price</th>
+                  <th>Critical Stock</th>{" "}
+                  {/* Add this header for critical stock */}
                   {loggedInUserType === "SUPER ADMIN" && <th>Actions</th>}
                 </tr>
               </thead>
@@ -568,16 +613,25 @@ const ProductManagement = () => {
                       </td>
                       <td style={{ fontWeight: "bold", color: "black" }}>
                         {formatNumber(product.original_stock || 0)}
-                      </td>{" "}
-                      <td>
-                        {formatNumber(
-                          product.stock !== null ? product.stock : 0
-                        )}
                       </td>
+                      <td>{formatNumber(product.stock || 0)}</td>
                       <td>
                         {product.selling_price
                           ? `₱${formatCurrency(product.selling_price)}`
                           : "N/A"}
+                      </td>
+                      <td>
+                        {/* Input field for updating the critical stock */}
+                        <input
+                          type="number"
+                          value={product.critical_stock}
+                          onChange={(e) =>
+                            handleUpdateCriticalStock(
+                              product.product_id,
+                              e.target.value
+                            )
+                          }
+                        />
                       </td>
                       {loggedInUserType === "SUPER ADMIN" && (
                         <td>
