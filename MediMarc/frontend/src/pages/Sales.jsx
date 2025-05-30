@@ -669,7 +669,6 @@ const Sales = () => {
                   <input
                     id="salesDate"
                     type="date"
-                    placeholder="dd/mm/yyyy"
                     value={newSale.date}
                     onChange={(e) =>
                       setNewSale({ ...newSale, date: e.target.value })
@@ -754,7 +753,6 @@ const Sales = () => {
                   <input
                     id="expirationDate"
                     type="date"
-                    placeholder="dd/mm/yyyy"
                     value={newSale.expirationDate}
                     readOnly
                   />
