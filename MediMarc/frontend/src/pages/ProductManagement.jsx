@@ -76,7 +76,7 @@ const ProductManagement = () => {
   useEffect(() => {
     if (searchTerm) {
       const filtered = products.filter((product) =>
-        product.item_code.toLowerCase().includes(searchTerm.toLowerCase())
+        product.product_name.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
       // Calculate total stock for the searched item_code
