@@ -79,7 +79,6 @@ const ProductManagement = () => {
         product.product_name.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
-      // Calculate total stock for the searched item_code
       const total = filtered.reduce((acc, product) => acc + product.stock, 0);
 
       setFilteredProducts(filtered);
@@ -700,7 +699,6 @@ const ProductManagement = () => {
                 <input
                   id="shipmentDate"
                   type="date"
-                  placeholder="dd/mm/yyyy"
                   value={newProduct.shipmentDate}
                   onChange={(e) =>
                     setNewProduct({

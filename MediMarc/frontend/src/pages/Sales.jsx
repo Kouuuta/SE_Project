@@ -664,13 +664,18 @@ const Sales = () => {
                     setNewSale({ ...newSale, invoiceNumber: e.target.value })
                   }
                 />
-                <input
-                  type="date"
-                  value={newSale.date}
-                  onChange={(e) =>
-                    setNewSale({ ...newSale, date: e.target.value })
-                  }
-                />
+                <div className="date-input-group">
+                  <label htmlFor="salesDate">Sales Date</label>
+                  <input
+                    id="salesDate"
+                    type="date"
+                    placeholder="dd/mm/yyyy"
+                    value={newSale.date}
+                    onChange={(e) =>
+                      setNewSale({ ...newSale, date: e.target.value })
+                    }
+                  />
+                </div>
                 <Select
                   options={products.map((product) => ({
                     value: product.product_id,
@@ -744,12 +749,16 @@ const Sales = () => {
                   value={newSale.lotNumber}
                   readOnly
                 />
-                <input
-                  type="date"
-                  placeholder="Expiration Date"
-                  value={newSale.expirationDate}
-                  readOnly
-                />
+                <div className="date-input-group">
+                  <label htmlFor="expirationDate">Expiration Date</label>
+                  <input
+                    id="expirationDate"
+                    type="date"
+                    placeholder="dd/mm/yyyy"
+                    value={newSale.expirationDate}
+                    readOnly
+                  />
+                </div>
 
                 <div className="modal-actions">
                   <button
