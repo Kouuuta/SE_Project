@@ -785,18 +785,23 @@ const ProductManagement = () => {
                 }
               />
 
-              <input
-                type="date"
-                placeholder="Expiration Date"
-                value={newProduct.expirationDate}
-                onChange={(e) =>
-                  setNewProduct({
-                    ...newProduct,
-                    expirationDate: e.target.value,
-                  })
-                }
-                min={new Date().toISOString().split("T")[0]}
-              />
+              <div className="date-input-group">
+                <label htmlFor="expirationDate">Expiration Date</label>
+                <input
+                  id="expirationDate"
+                  type="date"
+                  placeholder="Expiration Date"
+                  value={newProduct.expirationDate}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      expirationDate: e.target.value,
+                    })
+                  }
+                  min={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+
               <input
                 type="text"
                 placeholder="Selling Price 0.00"

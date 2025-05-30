@@ -764,7 +764,7 @@ const Sales = () => {
                     type="button"
                     onClick={handleAddSale}
                   >
-                    Add Sale
+                    Add Sales
                   </button>
                 </div>
               </form>
